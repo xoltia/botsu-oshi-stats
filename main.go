@@ -14,6 +14,7 @@ import (
 	"github.com/xoltia/botsu-oshi-stats/hololist"
 	"github.com/xoltia/botsu-oshi-stats/logs"
 	"github.com/xoltia/botsu-oshi-stats/server"
+	"github.com/xoltia/botsu-oshi-stats/static"
 	"golang.org/x/time/rate"
 	_ "modernc.org/sqlite"
 )
@@ -54,6 +55,8 @@ func updateVTubers(ctx context.Context, updater *hololist.Updater) {
 }
 
 func main() {
+	flag.Parse()
+
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
@@ -89,9 +92,11 @@ func main() {
 	go updateVTubers(ctx, updater)
 
 	// Setup server
+	staticServer := http.FileServerFS(static.FS)
 	server := server.NewServer(vtuberStore, logStore)
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /", server.GetIndex)
+	mux.Handle("GET /static/", http.StripPrefix("/static/", staticServer))
 
 	go func() {
 		if err := http.ListenAndServe(":8080", mux); err != nil {
