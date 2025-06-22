@@ -1,0 +1,40 @@
+package components
+
+import (
+  "github.com/xoltia/botsu-oshi-stats/logs"
+)
+
+templ baseLayout(title string) {
+  <html>
+    <head>
+    	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    	<meta name="viewport" content="user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, width=device-width" />
+    	<title>{title}</title>
+    </head>
+    <body>
+      { children... }
+    </body>
+  </html>
+}
+
+templ logEntry(log logs.Log) {
+  <div>
+    {log.VideoMeta.Title}
+  </div>
+}
+
+templ HomePage(logs []logs.Log, continuationURL templ.SafeURL) {
+  @baseLayout("Logs") {
+    <div>
+      for _, log := range logs {
+        @logEntry(log)
+      }
+
+      if continuationURL != "" {
+        <a href={continuationURL}>Next</a>
+      } else {
+        <span>You've reached the end.</span>
+      }
+    </div>
+  }
+}
