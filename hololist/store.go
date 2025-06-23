@@ -114,6 +114,6 @@ func (s *Store) FindByYouTubeID(ctx context.Context, id string) (v VTuber, err e
 }
 
 func (s *Store) FindByYouTubeHandle(ctx context.Context, handle string) (v VTuber, err error) {
-	err = s.db.GetContext(ctx, &v, "SELECT * FROM vtubers WHERE youtube_handle = $1", handle)
+	err = s.db.GetContext(ctx, &v, "SELECT * FROM vtubers WHERE youtube_handle = $1 COLLATE NOCASE", handle)
 	return
 }
