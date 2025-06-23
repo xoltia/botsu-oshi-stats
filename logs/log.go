@@ -7,18 +7,20 @@ import (
 )
 
 type Log struct {
-	ID        int64      `json:"id" db:"id"`
-	UserID    string     `json:"user_id" db:"user_id"`
-	MediaType string     `json:"media_type" db:"media_type"`
-	Date      time.Time  `json:"date" db:"date"`
-	DeletedAt *time.Time `json:"deleted_at" db:"deleted_at"`
-	VideoMeta VideoMeta  `json:"meta" db:"meta"`
+	ID        int64         `json:"id" db:"id"`
+	Duration  time.Duration `json:"duration" db:"duration"`
+	UserID    string        `json:"user_id" db:"user_id"`
+	MediaType string        `json:"media_type" db:"media_type"`
+	Date      time.Time     `json:"date" db:"date"`
+	DeletedAt *time.Time    `json:"deleted_at" db:"deleted_at"`
+	VideoMeta VideoMeta     `json:"meta" db:"meta"`
 }
 
 type VideoMeta struct {
 	Platform       string   `json:"platform" db:"platform"`
 	ChannelID      string   `json:"channel_id" db:"channel_id"`
 	ChannelHandle  string   `json:"channel_handle" db:"channel_handle"`
+	ChannelName    string   `json:"channel_name" db:"channel_name"`
 	VideoID        string   `json:"video_id" db:"video_id"`
 	Title          string   `json:"video_title" db:"video_title"`
 	LinkedChannels []string `json:"linked_channels" db:"linked_channels"`

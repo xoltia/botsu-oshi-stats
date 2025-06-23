@@ -96,6 +96,7 @@ func main() {
 	server := server.NewServer(vtuberStore, logStore)
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /", server.GetIndex)
+	mux.HandleFunc("GET /log-continuation", server.GetLogContinuation)
 	mux.Handle("GET /static/", http.StripPrefix("/static/", staticServer))
 
 	go func() {

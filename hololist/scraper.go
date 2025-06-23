@@ -128,7 +128,7 @@ func (s *Scraper) NextPosts(ctx context.Context, limit int) ([]VTuberMeta, error
 }
 
 var (
-	handleRegex = regexp.MustCompile(`(?:youtube.com/)(@[A-Za-z0-9-_]+)`)
+	handleRegex = regexp.MustCompile(`(?:youtube.com/)(@.+)`)
 )
 
 // Get a rendered post from the webpage URL. Can be obtained from `VTuberMeta.URL`.
