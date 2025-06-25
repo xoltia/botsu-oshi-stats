@@ -1,0 +1,91 @@
+package components
+
+import (
+  "strings"
+
+  "github.com/xoltia/botsu-oshi-stats/logs"
+  "github.com/xoltia/botsu-oshi-stats/vtubers"
+)
+
+templ baseLayout(title string) {
+  <html>
+    <head>
+    	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    	<meta name="viewport" content="user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, width=device-width" />
+    	<title>{title}</title>
+        <link rel="stylesheet" href="/static/tailwind.css"/>
+      <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.5/dist/htmx.min.js" integrity="sha384-t4DxZSyQK+0Uv4jzy5B0QyHyWQD2GFURUmxKMBVww9+e2EJ0ei/vCvv7+79z0fkr" crossorigin="anonymous"></script>
+    </head>
+    <body class="bg-neutral-900 text-neutral-200">
+      { children... }
+    </body>
+  </html>
+}
+
+type LogDetails struct {
+  logs.Log
+  VTubers []vtubers.VTuber
+}
+
+func vtuberShortLabel(v vtubers.VTuber) string {
+  if v.OshiMark != "" {
+    return v.OshiMark
+  }
+  parts := strings.SplitN(v.EnglishName, " ", 2)
+  if len(parts) == 1 {
+    n := min(2, len(parts[0]))
+    return strings.ToUpper(parts[0][:n])
+  } else if len(parts) == 2 {
+    n := min(1, len(parts[0]))
+    m := min(1, len(parts[1]))
+    if m == 0 {
+      n = min(2, len(parts[0]))
+    }
+    if n == 0 {
+      m = min(2, len(parts[1]))
+    }
+    return strings.ToUpper(parts[0][:n] + parts[1][:m])
+  }
+  return ""
+}
+
+templ logEntry(log LogDetails, continuationURL templ.SafeURL) {
+  <div
+    class="rounded-lg p-4 mb-2 bg-neutral-800 flex flex-row"
+    if continuationURL != "" {
+      hx-get={continuationURL}
+      hx-trigger="revealed"
+      hx-swap="afterend"
+    }
+  >
+    <img class="h-48 rounded" src={templ.SafeURL(log.VideoMeta.Thumbnail)} />
+    <div class="pl-4">
+      <div class="font-bold text-xl mb-1">{log.VideoMeta.Title}</div>
+      <div>{log.VideoMeta.ChannelName}</div>
+      <div class="italic">{log.Duration}</div>
+      <div class="mt-2 flex space-x-2 cursor-default">
+        for _, v := range log.VTubers {
+          <span title={v.EnglishName} class="rounded-lg p-2 bg-neutral-700">{vtuberShortLabel(v)}</span>
+        } 
+      </div>
+    </div>
+  </div>
+}
+
+templ LogsPart(logs []LogDetails, continuationURL templ.SafeURL) {
+    for i, log := range logs {
+      if i < len(logs) - 1 {
+        @logEntry(log, "")
+      } else {
+        @logEntry(log, continuationURL)
+      }
+    }
+}
+
+templ HomePage(logs []LogDetails, continuationURL templ.SafeURL) {
+  @baseLayout("Logs") {
+    <div class="p-4">
+      @LogsPart(logs, continuationURL)
+    </div>
+  }
+}
