@@ -1,4 +1,4 @@
-package hololist
+package vtubers
 
 import (
 	"context"

@@ -11,19 +11,18 @@ import (
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
-	"github.com/xoltia/botsu-oshi-stats/hololist"
 	"github.com/xoltia/botsu-oshi-stats/logs"
-	"github.com/xoltia/botsu-oshi-stats/server"
-	"github.com/xoltia/botsu-oshi-stats/static"
+	"github.com/xoltia/botsu-oshi-stats/styles"
+	"github.com/xoltia/botsu-oshi-stats/vtubers"
 	"golang.org/x/time/rate"
 	_ "modernc.org/sqlite"
 )
 
 var (
-	updateInterval = flag.Duration("update-interval", time.Hour*48, "how often to check for hololist updates")
+	updateInterval = flag.Duration("update-interval", time.Hour*48, "how often to check for vtuber updates")
 )
 
-func updateVTubers(ctx context.Context, updater *hololist.Updater) {
+func updateVTubers(ctx context.Context, updater *vtubers.Updater) {
 	for {
 		lastModified, err := updater.LastUpdate(ctx)
 		if err != nil {
@@ -72,19 +71,19 @@ func main() {
 	// Setup sqlite database and scraper
 	client := &http.Client{}
 	limiter := rate.NewLimiter(rate.Every(time.Second), 2)
-	scraper := hololist.NewScraper(client, limiter)
+	scraper := vtubers.NewHololistScraper(client, limiter)
 	dbx, err := sqlx.Open("sqlite", "oshistats.db")
 	if err != nil {
 		log.Panicln(err)
 	}
 	defer dbx.Close()
 
-	vtuberStore, err := hololist.CreateStore(ctx, dbx)
+	vtuberStore, err := vtubers.CreateStore(ctx, dbx)
 	if err != nil {
 		log.Panicln(err)
 	}
 
-	updater, err := hololist.OpenUpdater(ctx, dbx, vtuberStore, scraper)
+	updater, err := vtubers.OpenUpdater(ctx, dbx, vtuberStore, scraper)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -92,11 +91,11 @@ func main() {
 	go updateVTubers(ctx, updater)
 
 	// Setup server
-	staticServer := http.FileServerFS(static.FS)
-	server := server.NewServer(vtuberStore, logStore)
+	staticServer := http.FileServerFS(styles.FS)
+	server := newServer(vtuberStore, logStore)
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /", server.GetIndex)
-	mux.HandleFunc("GET /log-continuation", server.GetLogContinuation)
+	mux.HandleFunc("GET /", server.getIndex)
+	mux.HandleFunc("GET /log-continuation", server.getLogContinuation)
 	mux.Handle("GET /static/", http.StripPrefix("/static/", staticServer))
 
 	go func() {

@@ -12,7 +12,7 @@
   services.postgres.initialDatabases = [ { name = "botsu"; } ];
 
   scripts.build.exec = ''
-    tailwindcss -i input.css -o static/styles.css
+    tailwindcss -i styles/input.css -o styles/tailwind.css
     templ generate
     go build -o ./bin/server .
   '';

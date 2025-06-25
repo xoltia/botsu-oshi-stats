@@ -1,4 +1,4 @@
-package hololist
+package vtubers
 
 type VTuber struct {
 	VTuberRendered

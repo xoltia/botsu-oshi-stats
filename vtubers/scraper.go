@@ -1,4 +1,4 @@
-package hololist
+package vtubers
 
 import (
 	"context"
@@ -30,14 +30,14 @@ var (
 
 const postsEndpoint = "https://hololist.net/wp-json/wp/v2/posts"
 
-type Scraper struct {
+type HololistScraper struct {
 	limiter *rate.Limiter
 	client  *http.Client
 	offset  int
 }
 
-func NewScraper(client *http.Client, limiter *rate.Limiter) *Scraper {
-	return &Scraper{
+func NewHololistScraper(client *http.Client, limiter *rate.Limiter) *HololistScraper {
+	return &HololistScraper{
 		client:  client,
 		limiter: limiter,
 		offset:  0,
@@ -45,15 +45,15 @@ func NewScraper(client *http.Client, limiter *rate.Limiter) *Scraper {
 }
 
 // Resets post pagination.
-func (s *Scraper) Reset() {
+func (s *HololistScraper) Reset() {
 	s.offset = 0
 }
 
-func (s *Scraper) getWithBackoff(ctx context.Context, url string, initial time.Duration, maxAttempts int) (*http.Response, error) {
+func (s *HololistScraper) getWithBackoff(ctx context.Context, url string, initial time.Duration, maxAttempts int) (*http.Response, error) {
 	return s.getWithBackoffAttempt(ctx, url, initial, 0, maxAttempts)
 }
 
-func (s *Scraper) getWithBackoffAttempt(ctx context.Context, url string, initial time.Duration, attempt, maxAttempts int) (*http.Response, error) {
+func (s *HololistScraper) getWithBackoffAttempt(ctx context.Context, url string, initial time.Duration, attempt, maxAttempts int) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
@@ -90,7 +90,7 @@ func (s *Scraper) getWithBackoffAttempt(ctx context.Context, url string, initial
 
 // Get the next page of posts. Returns ErrExhaustedPosts when there are no more to fetch.
 // Not safe for concurrent access.
-func (s *Scraper) NextPosts(ctx context.Context, limit int) ([]VTuberMeta, error) {
+func (s *HololistScraper) NextPosts(ctx context.Context, limit int) ([]VTuberMeta, error) {
 	url := fmt.Sprintf("%s?type=216&per_page=%d&offset=%d", postsEndpoint, limit, s.offset)
 	res, err := s.getWithBackoff(ctx, url, time.Second, 5)
 	if err != nil {
@@ -133,7 +133,7 @@ var (
 
 // Get a rendered post from the webpage URL. Can be obtained from `VTuberMeta.URL`.
 // Safe to use concurrently.
-func (s *Scraper) GetRenderedPost(ctx context.Context, url string) (v VTuberRendered, err error) {
+func (s *HololistScraper) GetRenderedPost(ctx context.Context, url string) (v VTuberRendered, err error) {
 	res, err := s.getWithBackoff(ctx, url, time.Second, 5)
 	if err != nil {
 		return

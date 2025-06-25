@@ -1,4 +1,4 @@
-package hololist
+package vtubers
 
 import (
 	"context"
@@ -17,10 +17,10 @@ var (
 type Updater struct {
 	db      *sqlx.DB
 	store   *Store
-	scraper *Scraper
+	scraper *HololistScraper
 }
 
-func OpenUpdater(ctx context.Context, db *sqlx.DB, store *Store, scraper *Scraper) (*Updater, error) {
+func OpenUpdater(ctx context.Context, db *sqlx.DB, store *Store, scraper *HololistScraper) (*Updater, error) {
 	_, err := db.ExecContext(ctx, "CREATE TABLE IF NOT EXISTS updater (last_update TIMESTAMP)")
 	if err != nil {
 		return nil, err
