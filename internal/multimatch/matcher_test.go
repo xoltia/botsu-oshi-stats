@@ -1,7 +1,7 @@
 package multimatch_test
 
 import (
-	"fmt"
+	"iter"
 	"testing"
 
 	"github.com/xoltia/botsu-oshi-stats/internal/multimatch"
@@ -17,8 +17,16 @@ func TestMatcher(t *testing.T) {
 	builder.AddString("in", 6)
 	matcher := builder.Build()
 
+	expected := []int{3, 6, 4, 1, 3}
 	output := matcher.SearchString("I am eating meat")
-	for o := range output {
-		fmt.Printf("Output: %v\n", o)
+	next, _ := iter.Pull(output)
+	for i, e := range expected {
+		actual, ok := next()
+		if !ok {
+			break
+		}
+		if e != actual {
+			t.Errorf("Expected %d got %d at %d", e, actual, i)
+		}
 	}
 }
