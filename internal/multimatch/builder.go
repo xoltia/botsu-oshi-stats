@@ -24,9 +24,8 @@ func (b *Builder) AddString(term string, output int) {
 	b.Add([]byte(term), output)
 }
 
-// Build creates an FSM from the constructed trie
-// and returns it as an immutable Matcher. Resets
-// the current builder for reuse.
+// Build creates an FSM from the constructed trie and returns it as an immutable Matcher.
+// Resets the current builder for reuse.
 func (b *Builder) Build() Matcher {
 	r := b.ensureRoot()
 	b.buildFSMFromTrie()
