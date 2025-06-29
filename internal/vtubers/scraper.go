@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -49,11 +48,21 @@ func (s *HololistScraper) Reset() {
 	s.offset = 0
 }
 
-func (s *HololistScraper) getWithBackoff(ctx context.Context, url string, initial time.Duration, maxAttempts int) (*http.Response, error) {
+func (s *HololistScraper) getWithBackoff(
+	ctx context.Context,
+	url string,
+	initial time.Duration,
+	maxAttempts int,
+) (*http.Response, error) {
 	return s.getWithBackoffAttempt(ctx, url, initial, 0, maxAttempts)
 }
 
-func (s *HololistScraper) getWithBackoffAttempt(ctx context.Context, url string, initial time.Duration, attempt, maxAttempts int) (*http.Response, error) {
+func (s *HololistScraper) getWithBackoffAttempt(
+	ctx context.Context,
+	url string,
+	initial time.Duration,
+	attempt, maxAttempts int,
+) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
@@ -75,8 +84,6 @@ func (s *HololistScraper) getWithBackoffAttempt(ctx context.Context, url string,
 		return nil, ErrBackoff
 	}
 
-	log.Printf("Retrying [%d]: %s\n", attempt+1, url)
-
 	if attempt > 0 {
 		select {
 		case <-ctx.Done():
@@ -90,9 +97,9 @@ func (s *HololistScraper) getWithBackoffAttempt(ctx context.Context, url string,
 
 // Get the next page of posts. Returns ErrExhaustedPosts when there are no more to fetch.
 // Not safe for concurrent access.
-func (s *HololistScraper) NextPosts(ctx context.Context, limit int) ([]VTuberMeta, error) {
+func (s *HololistScraper) NextPosts(ctx context.Context, limit int, maxAttempts int) ([]VTuberMeta, error) {
 	url := fmt.Sprintf("%s?type=216&per_page=%d&offset=%d", postsEndpoint, limit, s.offset)
-	res, err := s.getWithBackoff(ctx, url, time.Second, 5)
+	res, err := s.getWithBackoff(ctx, url, time.Second, maxAttempts)
 	if err != nil {
 		return nil, err
 	}
@@ -133,8 +140,8 @@ var (
 
 // Get a rendered post from the webpage URL. Can be obtained from `VTuberMeta.URL`.
 // Safe to use concurrently.
-func (s *HololistScraper) GetRenderedPost(ctx context.Context, url string) (v VTuberRendered, err error) {
-	res, err := s.getWithBackoff(ctx, url, time.Second, 5)
+func (s *HololistScraper) GetRenderedPost(ctx context.Context, url string, maxAttempts int) (v VTuberRendered, err error) {
+	res, err := s.getWithBackoff(ctx, url, time.Second, maxAttempts)
 	if err != nil {
 		return
 	}
