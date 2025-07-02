@@ -29,13 +29,40 @@ func CreateStore(ctx context.Context, db *sqlx.DB) (*Store, error) {
 				id             INTEGER PRIMARY KEY,
 				link           TEXT NOT NULL NOT NULL,
 				modified       TEXT NOT NULL
-			)
+			);
+
+			CREATE TABLE IF NOT EXISTS vtuber_channels (
+				id         TEXT NOT NULL,
+				name       TEXT NOT NULL,
+				avatar_url TEXT NOT NULL
+			);
 		`)
 	if err != nil {
 		return nil, err
 	}
 	store := &Store{db}
 	return store, nil
+}
+
+func (s *Store) CreateOrUpdateChannel(ctx context.Context, c Channel) error {
+	_, err := s.db.NamedExecContext(ctx, `
+			INSERT INTO vtubers (
+				id,
+				name,
+				avatar_url
+			)
+			VALUES (
+				:id,
+				:name,
+				:avatar_url
+			)
+			ON CONFLICT (id) DO UPDATE
+			SET 
+				id = :id,
+				name = :name,
+				avatar_url = :avatar_url
+		`, c)
+	return err
 }
 
 func (s *Store) CreateOrUpdate(ctx context.Context, v VTuber) error {
@@ -115,5 +142,10 @@ func (s *Store) FindByYouTubeID(ctx context.Context, id string) (v VTuber, err e
 
 func (s *Store) FindByYouTubeHandle(ctx context.Context, handle string) (v VTuber, err error) {
 	err = s.db.GetContext(ctx, &v, "SELECT * FROM vtubers WHERE youtube_handle = $1 COLLATE NOCASE", handle)
+	return
+}
+
+func (s *Store) FindChannelByID(ctx context.Context, id string) (c Channel, err error) {
+	err = s.db.GetContext(ctx, &c, "SELECT * FROM vtuber_channels WHERE id = $1", id)
 	return
 }

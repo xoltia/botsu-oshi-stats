@@ -27,3 +27,11 @@ type VTuberMeta struct {
 	Link     string `json:"link" db:"link"`
 	Modified string `json:"modified" db:"modified"`
 }
+
+type Channel struct {
+	ID        string `db:"id"`
+	Handle    string `db:"handle"`
+	Name      string `db:"name"`
+	AvatarURL string `db:"avatar_url"`
+	BannerURL string `db:"banner_url"`
+}
