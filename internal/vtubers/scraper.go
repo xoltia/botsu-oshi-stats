@@ -190,7 +190,7 @@ func (s *HololistScraper) GetRenderedPost(ctx context.Context, url string, maxAt
 		if strings.HasPrefix(href, prefix) {
 			pathQuery := strings.TrimPrefix(href, prefix)
 			parts := strings.SplitN(pathQuery, "?", 2)
-			if len(parts) > 0 {
+			if len(parts) > 0 && len(parts[0]) == 24 {
 				v.YouTubeID = parts[0]
 			}
 			handleMatch := handleRegex.FindStringSubmatch(text)

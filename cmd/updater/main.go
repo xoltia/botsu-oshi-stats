@@ -18,6 +18,7 @@ import (
 func main() {
 	options := vtubers.UpdateOptions{}
 	flag.StringVar(&options.GoogleAPIKey, "google-api-key", "", "google api key for youtube data api")
+	flag.BoolVar(&options.ChannelsOnly, "channels-only", false, "only update channel data")
 	flag.Parse()
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)

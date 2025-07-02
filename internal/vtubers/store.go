@@ -2,6 +2,7 @@ package vtubers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -32,7 +33,7 @@ func CreateStore(ctx context.Context, db *sqlx.DB) (*Store, error) {
 			);
 
 			CREATE TABLE IF NOT EXISTS vtuber_channels (
-				id         TEXT NOT NULL,
+				id         TEXT NOT NULL PRIMARY KEY,
 				name       TEXT NOT NULL,
 				avatar_url TEXT NOT NULL
 			);
@@ -46,7 +47,7 @@ func CreateStore(ctx context.Context, db *sqlx.DB) (*Store, error) {
 
 func (s *Store) CreateOrUpdateChannel(ctx context.Context, c Channel) error {
 	_, err := s.db.NamedExecContext(ctx, `
-			INSERT INTO vtubers (
+			INSERT INTO vtuber_channels (
 				id,
 				name,
 				avatar_url
@@ -147,5 +148,29 @@ func (s *Store) FindByYouTubeHandle(ctx context.Context, handle string) (v VTube
 
 func (s *Store) FindChannelByID(ctx context.Context, id string) (c Channel, err error) {
 	err = s.db.GetContext(ctx, &c, "SELECT * FROM vtuber_channels WHERE id = $1", id)
+	return
+}
+
+func (s *Store) GetAllScrapedYouTubeIDs(ctx context.Context) (ids []string, err error) {
+	rows, err := s.db.QueryxContext(ctx, "SELECT DISTINCT youtube_id FROM vtubers WHERE youtube_id != ''")
+	if err != nil {
+		err = fmt.Errorf("query: %w", err)
+		return
+	}
+
+	for rows.Next() {
+		var row struct {
+			ID string `db:"youtube_id"`
+		}
+		if err = rows.StructScan(&row); err != nil {
+			err = fmt.Errorf("scan: %w", err)
+			return
+		}
+		ids = append(ids, row.ID)
+	}
+
+	if err = rows.Err(); err != nil {
+		err = fmt.Errorf("iteration: %w", err)
+	}
 	return
 }

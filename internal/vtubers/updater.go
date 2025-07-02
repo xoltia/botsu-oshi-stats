@@ -21,6 +21,7 @@ type UpdateOptions struct {
 	ScraperBatchSize   int
 	MaxRequestAttempts int
 	GoogleAPIKey       string
+	ChannelsOnly       bool
 }
 
 func (o *UpdateOptions) applyDefaults() {
@@ -82,9 +83,22 @@ func (u *Updater) updateHololistData(ctx context.Context) (iter.Seq[string], err
 func (u *Updater) Update(ctx context.Context) error {
 	u.Options.applyDefaults()
 
-	youtubeIDs, err := u.updateHololistData(ctx)
-	if err != nil {
-		return fmt.Errorf("hololist update: %w", err)
+	var (
+		youtubeIDs iter.Seq[string]
+		err        error
+	)
+
+	if !u.Options.ChannelsOnly {
+		youtubeIDs, err = u.updateHololistData(ctx)
+		if err != nil {
+			return fmt.Errorf("hololist update: %w", err)
+		}
+	} else {
+		ids, err := u.Store.GetAllScrapedYouTubeIDs(ctx)
+		if err != nil {
+			return fmt.Errorf("load ids: %w", err)
+		}
+		youtubeIDs = slices.Values(ids)
 	}
 
 	err = u.updateChannelData(ctx, youtubeIDs)
@@ -109,7 +123,7 @@ func (u *Updater) updateChannelData(ctx context.Context, ids iter.Seq[string]) e
 	channelsService := youtube.NewChannelsService(service)
 
 	idSlice := slices.Collect(ids)
-	batches := slices.Chunk(idSlice, 100)
+	batches := slices.Chunk(idSlice, 50)
 
 	for batch := range batches {
 		channels, err := channelsService.
