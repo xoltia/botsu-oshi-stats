@@ -1,4 +1,4 @@
-package videos
+package logs
 
 import (
 	"context"
@@ -8,6 +8,10 @@ import (
 
 type UserLogRepository struct {
 	db *sqlx.DB
+}
+
+func NewRepository(db *sqlx.DB) *UserLogRepository {
+	return &UserLogRepository{db}
 }
 
 type LogSet struct {
@@ -42,6 +46,6 @@ func (r *UserLogRepository) GetAll(ctx context.Context) (logs LogSet, err error)
 	return r.querySet(ctx, `
 		SELECT id, user_id, date, duration, meta
 		FROM activities
-		WHERE media_type = 'video' AND meta->>platform = 'youtube';
+		WHERE media_type = 'video' AND meta->>'platform' = 'youtube';
 	`)
 }

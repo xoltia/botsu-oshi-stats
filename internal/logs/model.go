@@ -1,4 +1,4 @@
-package videos
+package logs
 
 import (
 	"encoding/json"
@@ -11,7 +11,7 @@ type VideoInfo struct {
 	Title          string        `json:"video_title"`
 	ChannelID      string        `json:"channel_id"`
 	ChannelHandle  string        `json:"channel_handle"`
-	LinkedChannels string        `json:"linked_channels"`
+	LinkedChannels []string      `json:"linked_channels"`
 	Duration       time.Duration `json:"video_duration"`
 }
 

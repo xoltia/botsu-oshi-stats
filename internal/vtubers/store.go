@@ -174,3 +174,31 @@ func (s *Store) GetAllScrapedYouTubeIDs(ctx context.Context) (ids []string, err 
 	}
 	return
 }
+
+type Names struct {
+	ID           int    `db:"id"`
+	OriginalName string `db:"original_name"`
+	EnglishName  string `db:"english_name"`
+}
+
+func (s *Store) GetAllNames(ctx context.Context) (names []Names, err error) {
+	rows, err := s.db.QueryxContext(ctx, "SELECT id, original_name, english_name FROM vtubers")
+	if err != nil {
+		return nil, err
+	}
+
+	names = make([]Names, 0)
+	for rows.Next() {
+		var n Names
+		if err = rows.StructScan(&n); err != nil {
+			err = fmt.Errorf("scan: %w", err)
+			return
+		}
+		names = append(names, n)
+	}
+
+	if err = rows.Err(); err != nil {
+		err = fmt.Errorf("iteration: %w", err)
+	}
+	return
+}
