@@ -24,10 +24,11 @@ func CreateDetector(ctx context.Context, s *Store) (*Detector, error) {
 
 	builder := multimatch.Builder{}
 	for _, entry := range names {
-		if entry.OriginalName != "" {
-			builder.AddString(entry.OriginalName, entry.ID)
+		if acceptableOriginalName(entry.OriginalName) {
+			cleanName := strings.Replace(entry.OriginalName, "・", "", -1)
+			builder.AddString(cleanName, entry.ID)
 		}
-		if entry.EnglishName != "" {
+		if acceptableEnglishName(entry.EnglishName) {
 			builder.AddString(entry.EnglishName, entry.ID)
 		}
 	}
@@ -37,6 +38,23 @@ func CreateDetector(ctx context.Context, s *Store) (*Detector, error) {
 		dictionary: matcher,
 		store:      s,
 	}, nil
+}
+
+// Filter for English names that are too likely to have false positives.
+func acceptableEnglishName(s string) bool {
+	return strings.IndexByte(s, ' ') != -1
+}
+
+// Filter for non-English (hopefully Japanese) names that may have
+// false positives (i.e. 叶)
+func acceptableOriginalName(s string) bool {
+	runes := []rune(s)
+	hasNonKana := strings.ContainsFunc(s, func(r rune) bool {
+		katakana := r >= 0x30A0 && r <= 0x30FF
+		hiragana := r >= 0x3041 && r <= 0x3096
+		return !(katakana || hiragana)
+	})
+	return (hasNonKana && len(runes) > 1) || len(runes) >= 5
 }
 
 // DetectionResult contains the result of searching for hints of a vtubers
