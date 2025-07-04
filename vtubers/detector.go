@@ -7,8 +7,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/xoltia/botsu-oshi-stats/internal/logs"
-	"github.com/xoltia/botsu-oshi-stats/internal/multimatch"
+	"github.com/xoltia/botsu-oshi-stats/logs"
+	"github.com/xoltia/botsu-oshi-stats/multimatch"
 )
 
 type Detector struct {

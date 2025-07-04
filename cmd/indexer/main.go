@@ -9,9 +9,9 @@ import (
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
-	"github.com/xoltia/botsu-oshi-stats/internal/indexer"
-	"github.com/xoltia/botsu-oshi-stats/internal/logs"
-	"github.com/xoltia/botsu-oshi-stats/internal/vtubers"
+	"github.com/xoltia/botsu-oshi-stats/index"
+	"github.com/xoltia/botsu-oshi-stats/logs"
+	"github.com/xoltia/botsu-oshi-stats/vtubers"
 	_ "modernc.org/sqlite"
 )
 

@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/xoltia/botsu-oshi-stats/internal/vtubers"
+	"github.com/xoltia/botsu-oshi-stats/vtubers"
 	"golang.org/x/time/rate"
 	_ "modernc.org/sqlite"
 )

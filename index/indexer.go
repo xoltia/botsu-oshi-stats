@@ -3,8 +3,8 @@ package indexer
 import (
 	"context"
 
-	"github.com/xoltia/botsu-oshi-stats/internal/logs"
-	"github.com/xoltia/botsu-oshi-stats/internal/vtubers"
+	"github.com/xoltia/botsu-oshi-stats/logs"
+	"github.com/xoltia/botsu-oshi-stats/vtubers"
 )
 
 // Indexer reads from the log repository and populates

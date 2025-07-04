@@ -4,7 +4,7 @@ import (
 	"iter"
 	"testing"
 
-	"github.com/xoltia/botsu-oshi-stats/internal/multimatch"
+	"github.com/xoltia/botsu-oshi-stats/multimatch"
 )
 
 func TestMatcher(t *testing.T) {
