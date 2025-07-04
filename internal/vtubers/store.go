@@ -3,6 +3,7 @@ package vtubers
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -36,6 +37,10 @@ func CreateStore(ctx context.Context, db *sqlx.DB) (*Store, error) {
 				id         TEXT NOT NULL PRIMARY KEY,
 				name       TEXT NOT NULL,
 				avatar_url TEXT NOT NULL
+			);
+
+			CREATE TABLE IF NOT EXISTS update_history (
+				timestamp TIMESTAMP NOT NULL	
 			);
 		`)
 	if err != nil {
@@ -201,4 +206,17 @@ func (s *Store) GetAllNames(ctx context.Context) (names []Names, err error) {
 		err = fmt.Errorf("iteration: %w", err)
 	}
 	return
+}
+
+func (s *Store) LogUpdate(ctx context.Context) error {
+	_, err := s.db.ExecContext(ctx, "INSERT INTO updates (timestamp) VALUES (CURRENT_TIMESTAMP)")
+	return err
+}
+
+func (s *Store) LastUpdate(ctx context.Context) (time.Time, error) {
+	var row struct {
+		Timestamp time.Time `db:"timestamp"`
+	}
+	err := s.db.GetContext(ctx, &row, "SELECT MAX(timestamp) FROM updates")
+	return row.Timestamp, err
 }

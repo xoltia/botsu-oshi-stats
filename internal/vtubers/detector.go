@@ -39,8 +39,6 @@ func CreateDetector(ctx context.Context, s *Store) (*Detector, error) {
 	}, nil
 }
 
-type DetectionType int
-
 // DetectionResult contains the result of searching for hints of a vtubers
 // presence from video metadata. A single vtuber is only detected once per
 // type of detection, with more significant methods being attempted first.

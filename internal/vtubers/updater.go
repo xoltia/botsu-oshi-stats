@@ -106,6 +106,11 @@ func (u *Updater) Update(ctx context.Context) error {
 		return fmt.Errorf("channel data update: %w", err)
 	}
 
+	err = u.Store.LogUpdate(ctx)
+	if err != nil {
+		return fmt.Errorf("log update: %w", err)
+	}
+
 	return nil
 }
 

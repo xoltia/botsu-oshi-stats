@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
+	"github.com/xoltia/botsu-oshi-stats/internal/indexer"
 	"github.com/xoltia/botsu-oshi-stats/internal/logs"
 	"github.com/xoltia/botsu-oshi-stats/internal/vtubers"
 	_ "modernc.org/sqlite"
@@ -33,11 +33,6 @@ func main() {
 		log.Panicln(err)
 	}
 
-	detecter, err := vtubers.CreateDetector(ctx, store)
-	if err != nil {
-		log.Panicln(err)
-	}
-
 	pgDB, err := sqlx.Open("pgx", dbURL)
 	if err != nil {
 		log.Panicln(err)
@@ -51,24 +46,14 @@ func main() {
 	}
 	defer ls.Close()
 
-	i := 0
-	for ls.Next() && i < 10 {
-		l, err := ls.Scan()
-		if err != nil {
-			log.Panicln(err)
-		}
-
-		vtubers, err := detecter.Detect(ctx, l)
-		if err != nil {
-			log.Panicln(err)
-		}
-
-		fmt.Printf("https://youtube.com/watch?v=%v\n", l.Video.ID)
-		fmt.Printf("%v\n", vtubers.All)
-		i++
+	videoVTuberRepository, err := indexer.CreateVideoVTuberRepository(ctx, db)
+	if err != nil {
+		log.Panicln(err)
 	}
 
-	if err := ls.Err(); err != nil {
+	indexer := indexer.NewIndexer(store, logRepository, videoVTuberRepository)
+	err = indexer.Index(ctx)
+	if err != nil {
 		log.Panicln(err)
 	}
 }
