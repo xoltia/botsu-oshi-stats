@@ -37,23 +37,32 @@ templ watchedVideoCard(v WatchedVideo, continuationURL templ.SafeURL) {
        class="h-full block rounded-xl bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg overflow-hidden hover:scale-105 transform transition">
       <div class="relative w-full h-48">
         <div class="absolute inset-0 bg-neutral-500 animate-pulse"></div>
-        <img src={v.ThumbnailURL} alt={v.Title} class="object-cover w-full h-full"
-          onload="this.previousElementSibling.remove();"
-          crossorigin="anonymous"
-        />
-        <script>
-          (() => {
-            const currentScript = this.document.currentScript;
-            const img = currentScript.previousElementSibling;
-            const bgDiv = img.closest('.watched-video-bg');
-            img.addEventListener('load', () => {
-              const color = new ColorThief().getColor(img);
-              const [r, g, b] = color;
-              bgDiv.addEventListener('mouseenter', () => bgDiv.style.background = `rgba(${r}, ${g}, ${b}, 0.25)`);
-              bgDiv.addEventListener('mouseleave', () => bgDiv.style.background = "");
-            });
-          })();
-        </script>
+        // Hack to not cause CORS problems but without the ability to read the image data.
+        // Seems to only affect *.webp and *_live.jpg thumbnails.
+        // TODO: Find a better solution. Maybe use an image proxy?
+        if !strings.Contains(string(v.ThumbnailURL), ".webp") && !strings.Contains(string(v.ThumbnailURL), "_live.jpg") {
+          <img src={v.ThumbnailURL} alt={v.Title} class="object-cover w-full h-full"
+            onload="this.previousElementSibling.remove();"
+            crossorigin="anonymous"
+          />
+          <script>
+            (() => {
+              const currentScript = this.document.currentScript;
+              const img = currentScript.previousElementSibling;
+              const bgDiv = img.closest('.watched-video-bg');
+              img.addEventListener('load', () => {
+                const color = new ColorThief().getColor(img);
+                const [r, g, b] = color;
+                bgDiv.addEventListener('mouseenter', () => bgDiv.style.background = `rgba(${r}, ${g}, ${b}, 0.25)`);
+                bgDiv.addEventListener('mouseleave', () => bgDiv.style.background = "");
+              });
+            })();
+          </script>
+        } else {
+          <img src={v.ThumbnailURL} alt={v.Title} class="object-cover w-full h-full"
+            onload="this.previousElementSibling.remove();"
+          />
+        }
         <div class="absolute bottom-2 left-2 bg-black/50 text-white text-xs rounded px-2 py-1 font-bold">
           {fmt.Sprintf("Watched %.0f%%", v.PercentWatched * 100)}
         </div>
