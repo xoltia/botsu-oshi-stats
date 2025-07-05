@@ -11,24 +11,28 @@
   services.postgres.enable = true;
   services.postgres.initialDatabases = [ { name = "botsu"; } ];
 
-  # scripts.build.exec = ''
-  #   tailwindcss -i styles/input.css -o styles/tailwind.css
-  #   templ generate
-  #   go build -o ./bin/server .
-  # '';
+  scripts.generate.exec = ''
+    tailwindcss -i server/static/_input.css -o server/static/tailwind.css
+    templ generate
+  '';
 
-  # scripts.build-run.exec = ''
-  #   build
-  #   BOTSU_DB_URL="postgresql:///botsu" ./bin/server "$@"
-  # '';
+  scripts.build-server.exec = ''
+    generate
+    go build -o ./bin/server ./cmd/server
+  '';
   
-  # scripts.run-watch.exec = ''
-  #   find . \
-  #     \( -path '*/.*' -prune \) -o \
-  #     \( -type f \
-  #        \( -name '*.go'   ! -name '*_templ.go' \) \
-  #        -o -name '*.templ' \
-  #     \) -print \
-  #   | entr -cr build-run "$@"
-  # '';
+  scripts.build-run-server.exec = ''
+    build-server
+    BOTSU_DB_URL="postgresql:///botsu" ./bin/server "$@"
+  '';
+  
+  scripts.watch-run-server.exec = ''
+    find . \
+      \( -path '*/.*' -prune \) -o \
+      \( -type f \
+         \( -name '*.go'   ! -name '*_templ.go' \) \
+         -o -name '*.templ' \
+      \) -print \
+    | entr -cr build-run-server "$@"
+  '';
 }
