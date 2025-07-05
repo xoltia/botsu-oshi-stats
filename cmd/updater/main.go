@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/xoltia/botsu-oshi-stats/vtubers"
 	"golang.org/x/time/rate"
-	_ "modernc.org/sqlite"
 )
 
 func main() {
@@ -24,7 +24,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	db, err := sqlx.Open("sqlite", "oshistats.db")
+	db, err := sqlx.Open("sqlite3", "oshistats.db?_journal_mode=WAL")
 	if err != nil {
 		log.Panicln(err)
 	}

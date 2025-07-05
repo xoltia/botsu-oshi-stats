@@ -10,10 +10,10 @@ import (
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/xoltia/botsu-oshi-stats/index"
 	"github.com/xoltia/botsu-oshi-stats/logs"
 	"github.com/xoltia/botsu-oshi-stats/server"
-	_ "modernc.org/sqlite"
 )
 
 func main() {
@@ -28,7 +28,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	db, err := sqlx.Open("sqlite", "oshistats.db")
+	db, err := sqlx.Open("sqlite3", "oshistats.db?_journal_mode=WAL")
 	if err != nil {
 		log.Panicln(err)
 	}
