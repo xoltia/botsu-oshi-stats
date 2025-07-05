@@ -17,6 +17,7 @@ type IndexedVideoHistory struct {
 }
 
 type IndexedVideoVTuber struct {
+	LogID    int    `db:"log_id"`
 	VideoID  string `db:"video_id"`
 	UserID   string `db:"user_id"`
 	VTuberID int    `db:"vtuber_id"`
@@ -40,11 +41,11 @@ func CreateIndexedVideoRepository(ctx context.Context, db *sqlx.DB) (*IndexedVid
 		CREATE TABLE IF NOT EXISTS video_history (
 			video_id TEXT NOT NULL,
 			user_id TEXT NOT NULL,
+			log_id INTEGER NOT NULL PRIMARY KEY,
 			date TEXT NOT NULL,
 			duration INTEGER NOT NULL
 		);
 	`)
-
 	if err != nil {
 		return nil, err
 	}
@@ -103,12 +104,14 @@ func (r *IndexedVideoRepository) InsertVideoHistory(
 	ctx context.Context,
 	userID string,
 	videoID string,
+	logID int,
 	date time.Time,
 	duration time.Duration,
 ) error {
 	_, err := r.db.ExecContext(ctx, `
-		INSERT INTO video_history (user_id, video_id, date, duration)
-		VALUES (?, ?, ?, ?)
-	`, userID, videoID, date, duration)
+		INSERT INTO video_history (user_id, video_id, log_id, date, duration)
+		VALUES (?, ?, ?, ?, ?)
+		ON CONFLICT DO NOTHING
+	`, userID, videoID, logID, date, duration)
 	return err
 }

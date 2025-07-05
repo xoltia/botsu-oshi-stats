@@ -63,7 +63,8 @@ func (i *Indexer) Index(ctx context.Context) error {
 			ctx,
 			log.UserID,
 			log.Video.ID,
-			log.Date,
+			log.ID,
+			log.Date.UTC(),
 			log.Duration)
 		if err != nil {
 			return err
