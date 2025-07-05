@@ -121,6 +121,8 @@ func (d *Detector) Detect(ctx context.Context, log logs.Log) (DetectionResult, e
 		}
 	}
 
+	// TODO: Also check hashtags
+
 	result.LinkedChannel = result.All[linkedStart:linkedEnd]
 	result.NameText = result.All[linkedEnd:]
 	return result, nil
