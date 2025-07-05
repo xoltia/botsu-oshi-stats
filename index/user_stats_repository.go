@@ -1,1 +1,1 @@
-package indexer
+package index
