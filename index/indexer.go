@@ -11,17 +11,17 @@ import (
 // relevant information based on the last update to the
 // vtuber store.
 type Indexer struct {
-	vtuberStore     *vtubers.Store
-	logRepo         *logs.UserLogRepository
-	videoVTuberRepo *VideoVTuberRepository
+	vtuberStore *vtubers.Store
+	logRepo     *logs.UserLogRepository
+	indexRepo   *IndexedVideoRepository
 }
 
 func NewIndexer(
 	vs *vtubers.Store,
 	lr *logs.UserLogRepository,
-	vr *VideoVTuberRepository,
+	ir *IndexedVideoRepository,
 ) *Indexer {
-	return &Indexer{vs, lr, vr}
+	return &Indexer{vs, lr, ir}
 }
 
 // TODO: partial reindexing when data not recently updated
@@ -49,10 +49,24 @@ func (i *Indexer) Index(ctx context.Context) error {
 		}
 
 		for _, v := range vtubers.All {
-			err := i.videoVTuberRepo.InsertVideoVTuber(ctx, log.UserID, log.Video.ID, v.ID)
+			err := i.indexRepo.InsertVideoVTuber(
+				ctx,
+				log.UserID,
+				log.Video.ID,
+				v.ID)
 			if err != nil {
 				return err
 			}
+		}
+
+		err = i.indexRepo.InsertVideoHistory(
+			ctx,
+			log.UserID,
+			log.Video.ID,
+			log.Date,
+			log.Duration)
+		if err != nil {
+			return err
 		}
 	}
 

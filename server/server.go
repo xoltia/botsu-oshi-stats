@@ -14,11 +14,11 @@ import (
 )
 
 type Server struct {
-	logRepo         *logs.UserLogRepository
-	videoVTuberRepo *index.VideoVTuberRepository
+	logRepo   *logs.UserLogRepository
+	indexRepo *index.IndexedVideoRepository
 }
 
-func NewServer(lr *logs.UserLogRepository, vr *index.VideoVTuberRepository) *Server {
+func NewServer(lr *logs.UserLogRepository, vr *index.IndexedVideoRepository) *Server {
 	return &Server{lr, vr}
 }
 
@@ -44,7 +44,7 @@ func (s *Server) getIndex(w http.ResponseWriter, r *http.Request) {
 
 	videos := make([]components.WatchedVideo, 0, 12)
 	for _, vid := range userLogs {
-		vtubers, err := s.videoVTuberRepo.GetVTubersForVideo(r.Context(), userID, vid.ID)
+		vtubers, err := s.indexRepo.GetVTubersForVideo(r.Context(), userID, vid.ID)
 		if err != nil {
 			log.Printf("get video vtubers error: %s", err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -105,7 +105,7 @@ func (s *Server) getLogs(w http.ResponseWriter, r *http.Request) {
 
 	videos := make([]components.WatchedVideo, 0, 12)
 	for _, vid := range userLogs {
-		vtubers, err := s.videoVTuberRepo.GetVTubersForVideo(r.Context(), userID, vid.ID)
+		vtubers, err := s.indexRepo.GetVTubersForVideo(r.Context(), userID, vid.ID)
 		if err != nil {
 			log.Printf("get video vtubers error: %s", err)
 			w.WriteHeader(http.StatusInternalServerError)

@@ -46,12 +46,12 @@ func main() {
 	}
 	defer ls.Close()
 
-	videoVTuberRepository, err := index.CreateVideoVTuberRepository(ctx, db)
+	repo, err := index.CreateIndexedVideoRepository(ctx, db)
 	if err != nil {
 		log.Panicln(err)
 	}
 
-	indexer := index.NewIndexer(store, logRepository, videoVTuberRepository)
+	indexer := index.NewIndexer(store, logRepository, repo)
 	err = indexer.Index(ctx)
 	if err != nil {
 		log.Panicln(err)

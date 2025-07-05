@@ -3,22 +3,30 @@ package index
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/xoltia/botsu-oshi-stats/vtubers"
 )
 
-type VideoVTuber struct {
+type IndexedVideoHistory struct {
+	VideoID  string        `db:"video_id"`
+	UserID   string        `db:"user_id"`
+	Date     time.Time     `db:"date"`
+	Duration time.Duration `db:"duration"`
+}
+
+type IndexedVideoVTuber struct {
 	VideoID  string `db:"video_id"`
 	UserID   string `db:"user_id"`
 	VTuberID int    `db:"vtuber_id"`
 }
 
-type VideoVTuberRepository struct {
+type IndexedVideoRepository struct {
 	db *sqlx.DB
 }
 
-func CreateVideoVTuberRepository(ctx context.Context, db *sqlx.DB) (*VideoVTuberRepository, error) {
+func CreateIndexedVideoRepository(ctx context.Context, db *sqlx.DB) (*IndexedVideoRepository, error) {
 	_, err := db.ExecContext(ctx, `
 		CREATE TABLE IF NOT EXISTS video_vtubers (
 			video_id TEXT NOT NULL,
@@ -27,17 +35,24 @@ func CreateVideoVTuberRepository(ctx context.Context, db *sqlx.DB) (*VideoVTuber
 
 			FOREIGN KEY (vtuber_id) REFERENCES vtubers(id),
 			PRIMARY KEY (video_id, user_id, vtuber_id)	
-		)
+		);
+
+		CREATE TABLE IF NOT EXISTS video_history (
+			video_id TEXT NOT NULL,
+			user_id TEXT NOT NULL,
+			date TEXT NOT NULL,
+			duration INTEGER NOT NULL
+		);
 	`)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &VideoVTuberRepository{db}, nil
+	return &IndexedVideoRepository{db}, nil
 }
 
-func (r *VideoVTuberRepository) GetVTubersForVideo(
+func (r *IndexedVideoRepository) GetVTubersForVideo(
 	ctx context.Context,
 	userID string,
 	videoID string,
@@ -70,7 +85,7 @@ func (r *VideoVTuberRepository) GetVTubersForVideo(
 	return result, nil
 }
 
-func (r *VideoVTuberRepository) InsertVideoVTuber(
+func (r *IndexedVideoRepository) InsertVideoVTuber(
 	ctx context.Context,
 	userID string,
 	videoID string,
@@ -81,5 +96,19 @@ func (r *VideoVTuberRepository) InsertVideoVTuber(
 		VALUES (?, ?, ?)
 		ON CONFLICT DO NOTHING
 	`, userID, videoID, vtuberID)
+	return err
+}
+
+func (r *IndexedVideoRepository) InsertVideoHistory(
+	ctx context.Context,
+	userID string,
+	videoID string,
+	date time.Time,
+	duration time.Duration,
+) error {
+	_, err := r.db.ExecContext(ctx, `
+		INSERT INTO video_history (user_id, video_id, date, duration)
+		VALUES (?, ?, ?, ?)
+	`, userID, videoID, date, duration)
 	return err
 }

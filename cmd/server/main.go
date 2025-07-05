@@ -46,12 +46,12 @@ func main() {
 	}
 	defer ls.Close()
 
-	videoVTuberRepository, err := index.CreateVideoVTuberRepository(ctx, db)
+	repo, err := index.CreateIndexedVideoRepository(ctx, db)
 	if err != nil {
 		log.Panicln(err)
 	}
 
-	s := server.NewServer(logRepository, videoVTuberRepository)
+	s := server.NewServer(logRepository, repo)
 	err = http.ListenAndServe(addr, s)
 	if err != nil {
 		log.Fatalln(err)
