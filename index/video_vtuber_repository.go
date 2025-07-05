@@ -44,7 +44,7 @@ func (r *VideoVTuberRepository) GetVTubersForVideo(
 ) ([]vtubers.VTuber, error) {
 	result := make([]vtubers.VTuber, 0)
 	rows, err := r.db.QueryxContext(ctx, `
-		SELECT * FROM vtubers
+		SELECT vtubers.* FROM vtubers
 		LEFT JOIN video_vtubers
 		ON video_vtubers.vtuber_id = vtubers.id
 		WHERE video_vtubers.user_id = ? and video_vtubers.video_id = ?

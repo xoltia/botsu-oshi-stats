@@ -1,6 +1,79 @@
 package components
 
-templ IndexPage() {
+import "strings"
+import "fmt"
+
+type WatchedVideoVTuber struct{
+  Name     string
+  OshiMark string
+}
+
+func (v *WatchedVideoVTuber) indicatorString() string {
+  if v.OshiMark != "" {
+    return v.OshiMark
+  }
+  i :=  min(len(v.Name), 2)
+  return strings.ToUpper(v.Name[:i])
+}
+
+type WatchedVideo struct {
+  URL            templ.SafeURL
+  Title          string
+  ChannelTitle   string
+  ThumbnailURL   templ.SafeURL
+  PercentWatched float64
+  VTubers        []WatchedVideoVTuber
+}
+
+templ watchedVideoCard(v WatchedVideo, continuationURL templ.SafeURL) {
+  <a class="block rounded-xl bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg overflow-hidden hover:scale-105 transform transition"
+    href={v.URL}
+    if continuationURL != "" {
+      hx-get={continuationURL}
+      hx-trigger="revealed"
+      hx-swap="afterend"
+    }
+  >
+    <div class="relative w-full h-48">
+      <div class="absolute inset-0 bg-neutral-500 animate-pulse"></div>
+      <img src={v.ThumbnailURL} alt={v.Title} class="object-cover w-full h-full"
+        onload="this.previousElementSibling.remove();"
+      />
+      <div class="absolute bottom-2 left-2 bg-black/50 text-white text-xs rounded px-2 py-1 font-bold">
+        {fmt.Sprintf("Watched %.0f%%", v.PercentWatched * 100)}
+      </div>
+    </div>
+    <div class="p-4 text-white">
+      <h3 class="text-lg font-semibold line-clamp-2">{v.Title}</h3>
+      <p class="text-sm text-white/70">{v.ChannelTitle}</p>
+      <div class="mt-3 flex flex-wrap gap-2">
+        for _, vtuber := range v.VTubers {
+          <span class="bg-white/20 text-xs px-2 py-1 rounded-full">
+            {vtuber.OshiMark} {vtuber.Name}
+          </span>
+        }
+      </div>
+    </div>
+  </a>
+}
+
+templ WatchedVideoGridElements(videos []WatchedVideo, continuationURL templ.SafeURL) {
+  for i, v := range videos {
+    if i == len(videos) - 1 {
+      @watchedVideoCard(v, continuationURL)
+    } else {
+      @watchedVideoCard(v, "")
+    }
+  }
+}
+
+templ watchedVideoGrid(videos []WatchedVideo, continuationURL templ.SafeURL) {
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+    @WatchedVideoGridElements(videos, continuationURL)
+  </div>
+}
+
+templ IndexPage(videos []WatchedVideo, continuationURL templ.SafeURL) {
   <!DOCTYPE html>
   <html lang="en">
     <head>
@@ -9,10 +82,11 @@ templ IndexPage() {
       <meta http-equiv="X-UA-Compatible" content="ie=edge">
       <title>OshiStats</title>
       <link rel="stylesheet" href="/static/tailwind.css">
+      <script src="/static/htmx.min.js"></script>
     </head>
-    <body class="bg-neutral-900 text-neutral-100">
-      <main>
-          <h1>Hello world</h1>  
+    <body class="min-h-screen bg-gradient-to-r from-neutral-800 via-neutral-900 to-neutral-800">
+      <main class="container mx-auto p-6">
+        @watchedVideoGrid(videos, continuationURL)
       </main>
     </body>
   </html>

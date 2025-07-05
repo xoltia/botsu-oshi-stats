@@ -11,6 +11,8 @@ type VideoInfo struct {
 	Title          string        `json:"video_title"`
 	ChannelID      string        `json:"channel_id"`
 	ChannelHandle  string        `json:"channel_handle"`
+	ChannelName    string        `json:"channel_name"`
+	ThumbnailURL   string        `json:"thumbnail"`
 	LinkedChannels []string      `json:"linked_channels"`
 	Duration       time.Duration `json:"video_duration"`
 }

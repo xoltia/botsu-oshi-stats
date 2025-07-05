@@ -2,5 +2,5 @@ package static
 
 import "embed"
 
-//go:embed tailwind.css
+//go:embed htmx.min.js tailwind.css
 var FS embed.FS
