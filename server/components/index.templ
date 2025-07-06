@@ -10,7 +10,7 @@ type IndexPageModel struct{
   Videos            []WatchedVideo
   ContinuationURL   templ.SafeURL
   TopVTubersAllTime []TopVTuber
-  TopVTubersWeekly []TopVTuber
+  TopVTubersWeekly  []TopVTuber
 }
 
 templ topVTubersList(title string, vtubers []TopVTuber) {
