@@ -18,7 +18,7 @@ type IndexPageModel struct {
 	Videos            []WatchedVideo
 	ContinuationURL   templ.SafeURL
 	TopVTubersAllTime []TopVTuber
-	// TopVTubersMonthly []TopVTuber
+	TopVTubersWeekly  []TopVTuber
 }
 
 func topVTubersList(title string, vtubers []TopVTuber) templ.Component {
@@ -147,7 +147,19 @@ func IndexPage(model IndexPageModel) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = topVTubersList("Top of All Time", model.TopVTubersAllTime).Render(ctx, templ_7745c5c3_Buffer)
+		if len(model.TopVTubersAllTime) > 0 {
+			templ_7745c5c3_Err = topVTubersList("Top Of All Time", model.TopVTubersAllTime).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		if len(model.TopVTubersWeekly) > 0 {
+			templ_7745c5c3_Err = topVTubersList("Top Of Last 7 Days", model.TopVTubersWeekly).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<section class=\"px-2\"><h2 class=\"text-2xl font-bold text-white mb-4\">Watch History</h2>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -155,7 +167,7 @@ func IndexPage(model IndexPageModel) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</main></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</section></main></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

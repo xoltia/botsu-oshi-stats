@@ -10,7 +10,7 @@ type IndexPageModel struct{
   Videos            []WatchedVideo
   ContinuationURL   templ.SafeURL
   TopVTubersAllTime []TopVTuber
-  // TopVTubersMonthly []TopVTuber
+  TopVTubersWeekly []TopVTuber
 }
 
 templ topVTubersList(title string, vtubers []TopVTuber) {
@@ -48,8 +48,16 @@ templ IndexPage(model IndexPageModel) {
     </head>
     <body class="min-h-screen bg-gradient-to-r from-neutral-800 via-neutral-900 to-neutral-800">
       <main class="container mx-auto p-6">
-        @topVTubersList("Top of All Time", model.TopVTubersAllTime)
-        @watchedVideoGrid(model.Videos, model.ContinuationURL)
+        if len(model.TopVTubersAllTime) > 0 {
+          @topVTubersList("Top Of All Time", model.TopVTubersAllTime)
+        }
+        if len(model.TopVTubersWeekly) > 0 {
+          @topVTubersList("Top Of Last 7 Days", model.TopVTubersWeekly)
+        }
+        <section class="px-2">
+          <h2 class="text-2xl font-bold text-white mb-4">Watch History</h2>
+          @watchedVideoGrid(model.Videos, model.ContinuationURL)
+        </section>
       </main>
     </body>
   </html>

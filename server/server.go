@@ -109,10 +109,38 @@ func (s *Server) getIndex(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
+	topVTubersModelWeek := make([]components.TopVTuber, 0, topVTubersNumber)
+	topVTubersWeek, err := s.indexRepo.GetTopVTubersByAppearenceCount(
+		r.Context(),
+		userID,
+		time.Now().AddDate(0, 0, -7),
+		time.Now(),
+		topVTubersNumber,
+	)
+	if err != nil {
+		log.Printf("get top vtubers: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	for _, v := range topVTubersWeek {
+		channel, err := s.vtuberRepo.FindChannelByID(r.Context(), v.YouTubeID)
+		if err != nil {
+			log.Printf("get vtuber channel: %s", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		topVTubersModelWeek = append(topVTubersModelWeek, components.TopVTuber{
+			AvatarURL:    templ.SafeURL(channel.AvatarURL),
+			Name:         v.EnglishName,
+			OriginalName: v.OriginalName,
+		})
+	}
+
 	model := components.IndexPageModel{
 		Videos:            videos,
 		ContinuationURL:   templ.SafeURL(continuationURL),
 		TopVTubersAllTime: topVTubersModel,
+		TopVTubersWeekly:  topVTubersModelWeek,
 	}
 
 	components.IndexPage(model).Render(r.Context(), w)

@@ -295,7 +295,7 @@ func watchedVideoGrid(videos []WatchedVideo, continuationURL templ.SafeURL) temp
 			templ_7745c5c3_Var14 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<div class=\"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<div class=\"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
