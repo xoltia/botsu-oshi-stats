@@ -79,7 +79,7 @@ func (r *IndexedVideoRepository) GetVTubersForVideo(
 		result = append(result, row)
 	}
 
-	if err != nil {
+	if err = rows.Err(); err != nil {
 		return nil, fmt.Errorf("next: %w", err)
 	}
 
@@ -112,6 +112,47 @@ func (r *IndexedVideoRepository) InsertVideoHistory(
 		INSERT INTO video_history (user_id, video_id, log_id, date, duration)
 		VALUES (?, ?, ?, ?, ?)
 		ON CONFLICT DO NOTHING
-	`, userID, videoID, logID, date, duration)
+	`, userID, videoID, logID, date.UTC(), duration)
 	return err
+}
+
+func (r *IndexedVideoRepository) GetTopVTubersByAppearenceCount(
+	ctx context.Context,
+	userID string,
+	start, end time.Time,
+	limit int,
+) ([]vtubers.VTuber, error) {
+	rows, err := r.db.Unsafe().QueryxContext(ctx, `
+		SELECT vtb.*, COUNT(*) AS appearances
+		FROM video_history vh
+		JOIN video_vtubers vv
+		ON vh.video_id = vv.video_id AND vh.user_id = vv.user_id
+		JOIN vtubers vtb
+		ON vv.vtuber_id = vtb.id
+		WHERE vh.user_id = ?
+		      AND date(vh.date) BETWEEN date(?) AND date(?)
+		GROUP BY vtb.id
+		ORDER BY appearances DESC
+		LIMIT ?
+	`, userID, start.UTC(), end.UTC(), limit)
+
+	if err != nil {
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	result := make([]vtubers.VTuber, 0)
+	for rows.Next() {
+		var row vtubers.VTuber
+		err := rows.StructScan(&row)
+		if err != nil {
+			return nil, fmt.Errorf("scan: %w", err)
+		}
+		result = append(result, row)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("next: %w", err)
+	}
+
+	return result, nil
 }

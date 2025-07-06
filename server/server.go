@@ -5,21 +5,24 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/a-h/templ"
 	"github.com/xoltia/botsu-oshi-stats/index"
 	"github.com/xoltia/botsu-oshi-stats/logs"
 	"github.com/xoltia/botsu-oshi-stats/server/components"
 	"github.com/xoltia/botsu-oshi-stats/server/static"
+	"github.com/xoltia/botsu-oshi-stats/vtubers"
 )
 
 type Server struct {
-	logRepo   *logs.UserLogRepository
-	indexRepo *index.IndexedVideoRepository
+	logRepo    *logs.UserLogRepository
+	indexRepo  *index.IndexedVideoRepository
+	vtuberRepo *vtubers.Store
 }
 
-func NewServer(lr *logs.UserLogRepository, vr *index.IndexedVideoRepository) *Server {
-	return &Server{lr, vr}
+func NewServer(lr *logs.UserLogRepository, vr *index.IndexedVideoRepository, vs *vtubers.Store) *Server {
+	return &Server{lr, vr, vs}
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -75,9 +78,44 @@ func (s *Server) getIndex(w http.ResponseWriter, r *http.Request) {
 
 		videos = append(videos, video)
 	}
-
 	continuationURL := getContinuationURL(userID, nextKey)
-	components.IndexPage(videos, templ.SafeURL(continuationURL)).Render(r.Context(), w)
+
+	// TODO: implement better ranking
+	const topVTubersNumber = 6
+	topVTubersModel := make([]components.TopVTuber, 0, topVTubersNumber)
+	topVTubers, err := s.indexRepo.GetTopVTubersByAppearenceCount(
+		r.Context(),
+		userID,
+		time.Time{},
+		time.Now(),
+		topVTubersNumber,
+	)
+	if err != nil {
+		log.Printf("get top vtubers: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	for _, v := range topVTubers {
+		channel, err := s.vtuberRepo.FindChannelByID(r.Context(), v.YouTubeID)
+		if err != nil {
+			log.Printf("get vtuber channel: %s", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		topVTubersModel = append(topVTubersModel, components.TopVTuber{
+			AvatarURL:    templ.SafeURL(channel.AvatarURL),
+			Name:         v.EnglishName,
+			OriginalName: v.OriginalName,
+		})
+	}
+
+	model := components.IndexPageModel{
+		Videos:            videos,
+		ContinuationURL:   templ.SafeURL(continuationURL),
+		TopVTubersAllTime: topVTubersModel,
+	}
+
+	components.IndexPage(model).Render(r.Context(), w)
 }
 
 func (s *Server) getLogs(w http.ResponseWriter, r *http.Request) {

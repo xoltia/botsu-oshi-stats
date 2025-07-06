@@ -14,6 +14,7 @@ import (
 	"github.com/xoltia/botsu-oshi-stats/index"
 	"github.com/xoltia/botsu-oshi-stats/logs"
 	"github.com/xoltia/botsu-oshi-stats/server"
+	"github.com/xoltia/botsu-oshi-stats/vtubers"
 )
 
 func main() {
@@ -51,7 +52,12 @@ func main() {
 		log.Panicln(err)
 	}
 
-	s := server.NewServer(logRepository, repo)
+	vtuberStore, err := vtubers.CreateStore(ctx, db)
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	s := server.NewServer(logRepository, repo, vtuberStore)
 	err = http.ListenAndServe(addr, s)
 	if err != nil {
 		log.Fatalln(err)

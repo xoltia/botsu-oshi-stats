@@ -1,0 +1,99 @@
+package components
+
+import "strings"
+import "fmt"
+
+type WatchedVideoVTuber struct{
+  Name     string
+  OshiMark string
+}
+
+func (v *WatchedVideoVTuber) indicatorString() string {
+  if v.OshiMark != "" {
+    return v.OshiMark
+  }
+  i := min(len(v.Name), 2)
+  return strings.ToUpper(v.Name[:i])
+}
+
+type WatchedVideo struct {
+  URL            templ.SafeURL
+  Title          string
+  ChannelTitle   string
+  ThumbnailURL   templ.SafeURL
+  PercentWatched float64
+  VTubers        []WatchedVideoVTuber
+}
+
+templ watchedVideoCard(v WatchedVideo, continuationURL templ.SafeURL) {
+  <div class="watched-video-bg h-full transition ease-in-out"
+    if continuationURL != "" {
+      hx-get={continuationURL}
+      hx-trigger="revealed"
+      hx-swap="afterend"
+    }
+  >
+    <a href={v.URL}
+       class="h-full block rounded-xl bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg overflow-hidden hover:scale-105 transform transition">
+      <div class="relative w-full h-48">
+        <div class="absolute inset-0 bg-neutral-500 animate-pulse"></div>
+        // Hack to not cause CORS problems but without the ability to read the image data.
+        // Seems to only affect *.webp and *_live.jpg thumbnails.
+        // TODO: Find a better solution. Maybe use an image proxy?
+        if !strings.Contains(string(v.ThumbnailURL), ".webp") && !strings.Contains(string(v.ThumbnailURL), "_live.jpg") {
+          <img src={v.ThumbnailURL} alt={v.Title} class="object-cover w-full h-full"
+            onload="this.previousElementSibling.remove();"
+            crossorigin="anonymous"
+          />
+          <script>
+            (() => {
+              const currentScript = this.document.currentScript;
+              const img = currentScript.previousElementSibling;
+              const bgDiv = img.closest('.watched-video-bg');
+              img.addEventListener('load', () => {
+                const color = new ColorThief().getColor(img);
+                const [r, g, b] = color;
+                bgDiv.addEventListener('mouseenter', () => bgDiv.style.background = `rgba(${r}, ${g}, ${b}, 0.25)`);
+                bgDiv.addEventListener('mouseleave', () => bgDiv.style.background = "");
+              });
+            })();
+          </script>
+        } else {
+          <img src={v.ThumbnailURL} alt={v.Title} class="object-cover w-full h-full"
+            onload="this.previousElementSibling.remove();"
+          />
+        }
+        <div class="absolute bottom-2 left-2 bg-black/50 text-white text-xs rounded px-2 py-1 font-bold">
+          {fmt.Sprintf("Watched %.0f%%", v.PercentWatched * 100)}
+        </div>
+      </div>
+      <div class="p-4 text-white">
+        <h3 class="text-lg font-semibold line-clamp-2">{v.Title}</h3>
+        <p class="text-sm text-white/70">{v.ChannelTitle}</p>
+        <div class="mt-3 flex flex-wrap gap-2">
+          for _, vtuber := range v.VTubers {
+            <span class="bg-white/20 text-xs px-2 py-1 rounded-full">
+              {vtuber.OshiMark} {vtuber.Name}
+            </span>
+          }
+        </div>
+      </div>
+    </a>
+  </div>
+}
+
+templ WatchedVideoGridElements(videos []WatchedVideo, continuationURL templ.SafeURL) {
+  for i, v := range videos {
+    if i == len(videos) - 1 {
+      @watchedVideoCard(v, continuationURL)
+    } else {
+      @watchedVideoCard(v, "")
+    }
+  }
+}
+
+templ watchedVideoGrid(videos []WatchedVideo, continuationURL templ.SafeURL) {
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+    @WatchedVideoGridElements(videos, continuationURL)
+  </div>
+}

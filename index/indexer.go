@@ -64,7 +64,7 @@ func (i *Indexer) Index(ctx context.Context) error {
 			log.UserID,
 			log.Video.ID,
 			log.ID,
-			log.Date.UTC(),
+			log.Date,
 			log.Duration)
 		if err != nil {
 			return err
