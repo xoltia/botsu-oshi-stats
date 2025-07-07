@@ -31,6 +31,10 @@ func main() {
 	flag.StringVar(&oauthConfig.RedirectURL, "oauth-redirect-url", "http://localhost:8080/auth/callback", "discord oauth redirect url")
 	flag.Parse()
 
+	if oauthConfig.ClientSecret == "" {
+		oauthConfig.ClientSecret = os.Getenv("BOTSU_WEB_OAUTH_CLIENT_SECRET")
+	}
+
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 

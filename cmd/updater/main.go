@@ -21,6 +21,10 @@ func main() {
 	flag.BoolVar(&options.ChannelsOnly, "channels-only", false, "only update channel data")
 	flag.Parse()
 
+	if options.GoogleAPIKey == "" {
+		options.GoogleAPIKey = os.Getenv("BOTSU_WEB_GOOGLE_API_KEY")
+	}
+
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
