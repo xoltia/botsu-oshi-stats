@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/a-h/templ"
+	"github.com/xoltia/botsu-oshi-stats/auth"
 	"github.com/xoltia/botsu-oshi-stats/index"
 	"github.com/xoltia/botsu-oshi-stats/logs"
 	"github.com/xoltia/botsu-oshi-stats/server/components"
@@ -15,26 +16,53 @@ import (
 	"github.com/xoltia/botsu-oshi-stats/vtubers"
 )
 
-type Server struct {
-	logRepo    *logs.UserLogRepository
-	indexRepo  *index.IndexedVideoRepository
-	vtuberRepo *vtubers.Store
+type OAuthConfig struct {
+	ClientID     string
+	ClientSecret string
+	RedirectURL  string
 }
 
-func NewServer(lr *logs.UserLogRepository, vr *index.IndexedVideoRepository, vs *vtubers.Store) *Server {
-	return &Server{lr, vr, vs}
+type Server struct {
+	logRepo     *logs.UserLogRepository
+	indexRepo   *index.IndexedVideoRepository
+	vtuberRepo  *vtubers.Store
+	sessions    *auth.SessionStore
+	oauthConfig OAuthConfig
+}
+
+func NewServer(
+	logRepo *logs.UserLogRepository,
+	indexedVideoRepo *index.IndexedVideoRepository,
+	vtuberStore *vtubers.Store,
+	sessionStore *auth.SessionStore,
+	oauthConfig OAuthConfig,
+) *Server {
+	return &Server{
+		logRepo:     logRepo,
+		indexRepo:   indexedVideoRepo,
+		vtuberRepo:  vtuberStore,
+		sessions:    sessionStore,
+		oauthConfig: oauthConfig,
+	}
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	authHandler := auth.NewDiscordOAuthHandler(s.sessions, auth.DiscordOAuthHandlerConfig{
+		ClientID:     s.oauthConfig.ClientID,
+		ClientSecret: s.oauthConfig.ClientSecret,
+		RedirectURL:  s.oauthConfig.RedirectURL,
+	})
+
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /", s.getIndex)
-	mux.HandleFunc("GET /logs", s.getLogs)
+	mux.HandleFunc("GET /", authHandler.WrapHandlerFunc(s.getIndex))
+	mux.HandleFunc("GET /logs", authHandler.WrapHandlerFunc(s.getLogs))
+	mux.HandleFunc("GET /auth/callback", authHandler.HandleCallback)
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(static.FS)))
 	mux.ServeHTTP(w, r)
 }
 
 func (s *Server) getIndex(w http.ResponseWriter, r *http.Request) {
-	userID := r.URL.Query().Get("user")
+	userID := auth.MustSessionFromContext(r.Context()).UserID
 	userLogs, nextKey, err := s.logRepo.GetRecentUserVideos(r.Context(), logs.GetRecentUserVideosParams{
 		UserID: userID,
 		Limit:  12,
@@ -78,7 +106,7 @@ func (s *Server) getIndex(w http.ResponseWriter, r *http.Request) {
 
 		videos = append(videos, video)
 	}
-	continuationURL := getContinuationURL(userID, nextKey)
+	continuationURL := getContinuationURL(nextKey)
 
 	// TODO: implement better ranking
 	const topVTubersNumber = 6
@@ -147,7 +175,7 @@ func (s *Server) getIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getLogs(w http.ResponseWriter, r *http.Request) {
-	userID := r.URL.Query().Get("user")
+	userID := auth.MustSessionFromContext(r.Context()).UserID
 	cursor := r.URL.Query().Get("cursor")
 
 	var key logs.PaginationKey
@@ -203,17 +231,16 @@ func (s *Server) getLogs(w http.ResponseWriter, r *http.Request) {
 		videos = append(videos, video)
 	}
 
-	continuationURL := getContinuationURL(userID, nextKey)
+	continuationURL := getContinuationURL(nextKey)
 	components.WatchedVideoGridElements(videos, templ.SafeURL(continuationURL)).Render(r.Context(), w)
 }
 
-func getContinuationURL(userID string, key logs.PaginationKey) string {
+func getContinuationURL(key logs.PaginationKey) string {
 	if key.IsZero() {
 		return ""
 	}
 	u := url.URL{Path: "/logs"}
 	q := url.Values{}
-	q.Set("user", userID)
 	q.Set("cursor", key.EncodeBase64String())
 	u.RawQuery = q.Encode()
 	return u.String()

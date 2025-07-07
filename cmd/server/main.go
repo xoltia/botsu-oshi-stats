@@ -11,6 +11,7 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/xoltia/botsu-oshi-stats/auth"
 	"github.com/xoltia/botsu-oshi-stats/index"
 	"github.com/xoltia/botsu-oshi-stats/logs"
 	"github.com/xoltia/botsu-oshi-stats/server"
@@ -19,11 +20,15 @@ import (
 
 func main() {
 	var (
-		addr  string
-		dbURL string
+		addr        string
+		dbURL       string
+		oauthConfig server.OAuthConfig
 	)
 	flag.StringVar(&dbURL, "db-url", "postgresql:///botsu", "url to connect to postgres db")
 	flag.StringVar(&addr, "addr", ":8080", "address to listen on")
+	flag.StringVar(&oauthConfig.ClientID, "oauth-client-id", "", "discord oauth client id")
+	flag.StringVar(&oauthConfig.ClientSecret, "oauth-client-secret", "", "discord oauth client secret")
+	flag.StringVar(&oauthConfig.RedirectURL, "oauth-redirect-url", "http://localhost:8080/auth/callback", "discord oauth redirect url")
 	flag.Parse()
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
@@ -57,7 +62,12 @@ func main() {
 		log.Panicln(err)
 	}
 
-	s := server.NewServer(logRepository, repo, vtuberStore)
+	sessionStore, err := auth.CreateSessionStore(ctx, db)
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	s := server.NewServer(logRepository, repo, vtuberStore, sessionStore, oauthConfig)
 	err = http.ListenAndServe(addr, s)
 	if err != nil {
 		log.Fatalln(err)
