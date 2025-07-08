@@ -7,7 +7,6 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/a-h/templ"
 	"github.com/xoltia/botsu-oshi-stats/auth"
 	"github.com/xoltia/botsu-oshi-stats/index"
 	"github.com/xoltia/botsu-oshi-stats/logs"
@@ -93,8 +92,8 @@ func (s *Server) getIndex(w http.ResponseWriter, r *http.Request) {
 		video.Title = vid.Title
 		video.ChannelTitle = vid.ChannelName
 		video.PercentWatched = min(1, float64(watchTime)/float64(vid.Duration))
-		video.ThumbnailURL = templ.SafeURL(vid.ThumbnailURL) // TODO: validate url
-		video.URL = templ.SafeURL(fmt.Sprintf("https://youtu.be/%s", vid.ID))
+		video.ThumbnailURL = vid.ThumbnailURL // TODO: validate url
+		video.URL = fmt.Sprintf("https://youtu.be/%s", vid.ID)
 		video.VTubers = make([]components.WatchedVideoVTuber, len(vtubers))
 
 		for i, vtuber := range vtubers {
@@ -131,7 +130,7 @@ func (s *Server) getIndex(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		topVTubersModel = append(topVTubersModel, components.TopVTuber{
-			AvatarURL:    templ.SafeURL(channel.AvatarURL),
+			AvatarURL:    channel.AvatarURL,
 			Name:         v.EnglishName,
 			OriginalName: v.OriginalName,
 		})
@@ -158,7 +157,7 @@ func (s *Server) getIndex(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		topVTubersModelWeek = append(topVTubersModelWeek, components.TopVTuber{
-			AvatarURL:    templ.SafeURL(channel.AvatarURL),
+			AvatarURL:    channel.AvatarURL,
 			Name:         v.EnglishName,
 			OriginalName: v.OriginalName,
 		})
@@ -166,7 +165,7 @@ func (s *Server) getIndex(w http.ResponseWriter, r *http.Request) {
 
 	model := components.IndexPageModel{
 		Videos:            videos,
-		ContinuationURL:   templ.SafeURL(continuationURL),
+		ContinuationURL:   continuationURL,
 		TopVTubersAllTime: topVTubersModel,
 		TopVTubersWeekly:  topVTubersModelWeek,
 	}
@@ -217,8 +216,8 @@ func (s *Server) getLogs(w http.ResponseWriter, r *http.Request) {
 		video.Title = vid.Title
 		video.ChannelTitle = vid.ChannelName
 		video.PercentWatched = min(1, float64(watchTime)/float64(vid.Duration))
-		video.ThumbnailURL = templ.SafeURL(vid.ThumbnailURL) // TODO: validate url
-		video.URL = templ.SafeURL(fmt.Sprintf("https://youtu.be/%s", vid.ID))
+		video.ThumbnailURL = vid.ThumbnailURL // TODO: validate url
+		video.URL = fmt.Sprintf("https://youtu.be/%s", vid.ID)
 		video.VTubers = make([]components.WatchedVideoVTuber, len(vtubers))
 
 		for i, vtuber := range vtubers {
@@ -232,7 +231,7 @@ func (s *Server) getLogs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	continuationURL := getContinuationURL(nextKey)
-	components.WatchedVideoGridElements(videos, templ.SafeURL(continuationURL)).Render(r.Context(), w)
+	components.WatchedVideoGridElements(videos, continuationURL).Render(r.Context(), w)
 }
 
 func getContinuationURL(key logs.PaginationKey) string {

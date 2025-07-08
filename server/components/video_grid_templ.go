@@ -25,15 +25,15 @@ func (v *WatchedVideoVTuber) indicatorString() string {
 }
 
 type WatchedVideo struct {
-	URL            templ.SafeURL
+	URL            string
 	Title          string
 	ChannelTitle   string
-	ThumbnailURL   templ.SafeURL
+	ThumbnailURL   string
 	PercentWatched float64
 	VTubers        []WatchedVideoVTuber
 }
 
-func watchedVideoCard(v WatchedVideo, continuationURL templ.SafeURL) templ.Component {
+func watchedVideoCard(v WatchedVideo, continuationURL string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -81,7 +81,7 @@ func watchedVideoCard(v WatchedVideo, continuationURL templ.SafeURL) templ.Compo
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var3 templ.SafeURL = v.URL
+		var templ_7745c5c3_Var3 templ.SafeURL = templ.URL(v.URL)
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var3)))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -236,7 +236,7 @@ func watchedVideoCard(v WatchedVideo, continuationURL templ.SafeURL) templ.Compo
 	})
 }
 
-func WatchedVideoGridElements(videos []WatchedVideo, continuationURL templ.SafeURL) templ.Component {
+func WatchedVideoGridElements(videos []WatchedVideo, continuationURL string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -274,7 +274,7 @@ func WatchedVideoGridElements(videos []WatchedVideo, continuationURL templ.SafeU
 	})
 }
 
-func watchedVideoGrid(videos []WatchedVideo, continuationURL templ.SafeURL) templ.Component {
+func watchedVideoGrid(videos []WatchedVideo, continuationURL string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {

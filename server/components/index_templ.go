@@ -11,12 +11,12 @@ import templruntime "github.com/a-h/templ/runtime"
 type TopVTuber struct {
 	Name         string
 	OriginalName string
-	AvatarURL    templ.SafeURL
+	AvatarURL    string
 }
 
 type IndexPageModel struct {
 	Videos            []WatchedVideo
-	ContinuationURL   templ.SafeURL
+	ContinuationURL   string
 	TopVTubersAllTime []TopVTuber
 	TopVTubersWeekly  []TopVTuber
 }

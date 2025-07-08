@@ -17,15 +17,15 @@ func (v *WatchedVideoVTuber) indicatorString() string {
 }
 
 type WatchedVideo struct {
-  URL            templ.SafeURL
+  URL            string
   Title          string
   ChannelTitle   string
-  ThumbnailURL   templ.SafeURL
+  ThumbnailURL   string
   PercentWatched float64
   VTubers        []WatchedVideoVTuber
 }
 
-templ watchedVideoCard(v WatchedVideo, continuationURL templ.SafeURL) {
+templ watchedVideoCard(v WatchedVideo, continuationURL string) {
   <div class="watched-video-bg h-full transition ease-in-out"
     if continuationURL != "" {
       hx-get={continuationURL}
@@ -33,7 +33,7 @@ templ watchedVideoCard(v WatchedVideo, continuationURL templ.SafeURL) {
       hx-swap="afterend"
     }
   >
-    <a href={v.URL}
+    <a href={templ.URL(v.URL)}
        class="h-full block rounded-xl bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg overflow-hidden hover:scale-105 transform transition">
       <div class="relative w-full h-48">
         <div class="absolute inset-0 bg-neutral-500 animate-pulse"></div>
@@ -82,7 +82,7 @@ templ watchedVideoCard(v WatchedVideo, continuationURL templ.SafeURL) {
   </div>
 }
 
-templ WatchedVideoGridElements(videos []WatchedVideo, continuationURL templ.SafeURL) {
+templ WatchedVideoGridElements(videos []WatchedVideo, continuationURL string) {
   for i, v := range videos {
     if i == len(videos) - 1 {
       @watchedVideoCard(v, continuationURL)
@@ -92,7 +92,7 @@ templ WatchedVideoGridElements(videos []WatchedVideo, continuationURL templ.Safe
   }
 }
 
-templ watchedVideoGrid(videos []WatchedVideo, continuationURL templ.SafeURL) {
+templ watchedVideoGrid(videos []WatchedVideo, continuationURL string) {
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
     @WatchedVideoGridElements(videos, continuationURL)
   </div>
