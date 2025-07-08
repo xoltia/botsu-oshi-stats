@@ -135,7 +135,7 @@ func IndexPage(model IndexPageModel) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if len(model.TopVTubersAllTime) > 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<section class=\"my-8\"><h2 class=\"text-2xl font-bold text-white mb-4 px-2\">Top Of All Time</h2>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<section class=\"my-8\"><div class=\"flex items-center gap-5 px-2 mb-4\"><h2 class=\"text-2xl font-bold text-white\">Top Of All Time</h2><a href=\"/timeline?type=all\" class=\"text-sm text-blue-400 hover:underline flex items-center\">Overview <span class=\"ml-1\">→</span></a></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -149,7 +149,7 @@ func IndexPage(model IndexPageModel) templ.Component {
 			}
 		}
 		if len(model.TopVTubersWeekly) > 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<section class=\"my-8\"><h2 class=\"text-2xl font-bold text-white mb-4 px-2\">Top Of Last 7 Days</h2>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<section class=\"my-8\"><div class=\"flex items-center gap-5 px-2 mb-4\"><h2 class=\"text-2xl font-bold text-white\">Top Of Last 7 Days</h2><a href=\"/timeline?type=week\" class=\"text-sm text-blue-400 hover:underline flex items-center\">Overview <span class=\"ml-1\">→</span></a></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
