@@ -7,10 +7,11 @@ type TopVTuber struct{
 }
 
 type IndexPageModel struct{
-  Videos            []WatchedVideo
-  ContinuationURL   string
-  TopVTubersAllTime []TopVTuber
-  TopVTubersWeekly  []TopVTuber
+  Videos                []WatchedVideo
+  ContinuationURL       string
+  TopVTubersAllTime     []TopVTuber
+  TopVTubersWeekly      []TopVTuber
+  UserProfilePictureURL string
 }
 
 templ topVTubersList(vtubers []TopVTuber) {
@@ -39,11 +40,26 @@ templ IndexPage(model IndexPageModel) {
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>OshiStats</title>
+      <link rel="icon" type="image/png" href="/static/icon-64.png">
       <link rel="stylesheet" href="/static/tailwind.css">
       <script src="/static/htmx.min.js"></script>
       <script src="/static/color-thief.min.js"></script>
     </head>
     <body class="min-h-screen bg-gradient-to-r from-neutral-800 via-neutral-900 to-neutral-800">
+      <header class="bg-neutral-900 border-b border-neutral-700">
+        <div class="container mx-auto flex items-center justify-between px-6 py-4">
+          <div class="flex items-center gap-4">
+            <img src="/static/icon-240.png" alt="OshiStats Icon" class="w-10 h-10 rounded">
+            <div class="gap-0 select-none">
+              <h2 class="text-neutral-200 mb-0 text-sm font-semibold">Botsu</h2>
+              <h1 class="text-white text-2xl font-semibold">OshiStats</h1>
+            </div>
+          </div>
+          if model.UserProfilePictureURL != "" {
+            <img src={model.UserProfilePictureURL} alt="Profile" class="w-10 h-10 rounded-full border border-neutral-600 shadow-sm">
+          }
+        </div>
+      </header>
       <main class="container mx-auto p-6">
         if len(model.TopVTubersAllTime) > 0 {
           <section class="my-8">

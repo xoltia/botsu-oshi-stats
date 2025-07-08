@@ -61,7 +61,9 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getIndex(w http.ResponseWriter, r *http.Request) {
-	userID := auth.MustSessionFromContext(r.Context()).UserID
+	session := auth.MustSessionFromContext(r.Context())
+	userID := session.UserID
+
 	userLogs, nextKey, err := s.logRepo.GetRecentUserVideos(r.Context(), logs.GetRecentUserVideosParams{
 		UserID: userID,
 		Limit:  12,
@@ -168,6 +170,10 @@ func (s *Server) getIndex(w http.ResponseWriter, r *http.Request) {
 		ContinuationURL:   continuationURL,
 		TopVTubersAllTime: topVTubersModel,
 		TopVTubersWeekly:  topVTubersModelWeek,
+	}
+
+	if session.Avatar != "" {
+		model.UserProfilePictureURL = fmt.Sprintf("https://cdn.discordapp.com/avatars/%s/%s.webp?size=128", session.UserID, session.Avatar)
 	}
 
 	components.IndexPage(model).Render(r.Context(), w)

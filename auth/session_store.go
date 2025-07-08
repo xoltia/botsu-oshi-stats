@@ -15,7 +15,8 @@ func CreateSessionStore(ctx context.Context, db *sqlx.DB) (*SessionStore, error)
 		CREATE TABLE IF NOT EXISTS sessions (
 			id          TEXT NOT NULL PRIMARY KEY,
 			oauth_state TEXT NOT NULL,
-			user_id     TEXT NOT NULL
+			user_id     TEXT NOT NULL,
+			avatar      TEXT NOT NULL
 		)
 	`)
 	if err != nil {
@@ -24,15 +25,20 @@ func CreateSessionStore(ctx context.Context, db *sqlx.DB) (*SessionStore, error)
 	return &SessionStore{db}, nil
 }
 
-func (s *SessionStore) setSessionUserID(ctx context.Context, sessionID string, userID string) error {
-	_, err := s.db.ExecContext(ctx, "UPDATE sessions SET user_id = ? WHERE id = ?", userID, sessionID)
+func (s *SessionStore) setSessionUserData(ctx context.Context, sessionID string, userID string, avatar string) error {
+	_, err := s.db.ExecContext(ctx, `
+		UPDATE sessions
+		SET user_id = ?,
+			avatar = ?
+		WHERE id = ?
+	`, userID, avatar, sessionID)
 	return err
 }
 
 func (s *SessionStore) insertSession(ctx context.Context, session Session) error {
 	_, err := s.db.NamedExecContext(ctx, `
-		INSERT INTO sessions (id, oauth_state, user_id)
-		VALUES (:id, :oauth_state, :user_id)
+		INSERT INTO sessions (id, oauth_state, user_id, avatar)
+		VALUES (:id, :oauth_state, :user_id, :avatar)
 	`, session)
 	return err
 }

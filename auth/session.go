@@ -10,6 +10,7 @@ type Session struct {
 	ID         string `db:"id"`
 	OAuthState string `db:"oauth_state"`
 	UserID     string `db:"user_id"`
+	Avatar     string `db:"avatar"`
 }
 
 type sessionCtxKeyT string

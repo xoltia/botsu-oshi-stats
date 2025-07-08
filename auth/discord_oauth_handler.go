@@ -108,7 +108,8 @@ func (h *DiscordOAuthHandler) HandleCallback(w http.ResponseWriter, r *http.Requ
 	defer res.Body.Close()
 
 	var user struct {
-		ID string `json:"id"`
+		ID     string `json:"id"`
+		Avatar string `json:"avatar"`
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&user)
@@ -118,7 +119,7 @@ func (h *DiscordOAuthHandler) HandleCallback(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	err = h.sessions.setSessionUserID(r.Context(), sessionID, user.ID)
+	err = h.sessions.setSessionUserData(r.Context(), sessionID, user.ID, user.Avatar)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Printf("Error setting session user: %s", err)

@@ -15,10 +15,11 @@ type TopVTuber struct {
 }
 
 type IndexPageModel struct {
-	Videos            []WatchedVideo
-	ContinuationURL   string
-	TopVTubersAllTime []TopVTuber
-	TopVTubersWeekly  []TopVTuber
+	Videos                []WatchedVideo
+	ContinuationURL       string
+	TopVTubersAllTime     []TopVTuber
+	TopVTubersWeekly      []TopVTuber
+	UserProfilePictureURL string
 }
 
 func topVTubersList(vtubers []TopVTuber) templ.Component {
@@ -54,7 +55,7 @@ func topVTubersList(vtubers []TopVTuber) templ.Component {
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(vtuber.AvatarURL)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `server/components/index.templ`, Line: 21, Col: 36}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `server/components/index.templ`, Line: 22, Col: 36}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -67,7 +68,7 @@ func topVTubersList(vtubers []TopVTuber) templ.Component {
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(vtuber.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `server/components/index.templ`, Line: 26, Col: 76}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `server/components/index.templ`, Line: 27, Col: 76}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -85,7 +86,7 @@ func topVTubersList(vtubers []TopVTuber) templ.Component {
 				var templ_7745c5c3_Var4 string
 				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(vtuber.OriginalName)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `server/components/index.templ`, Line: 28, Col: 78}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `server/components/index.templ`, Line: 29, Col: 78}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 				if templ_7745c5c3_Err != nil {
@@ -130,12 +131,35 @@ func IndexPage(model IndexPageModel) templ.Component {
 			templ_7745c5c3_Var5 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>OshiStats</title><link rel=\"stylesheet\" href=\"/static/tailwind.css\"><script src=\"/static/htmx.min.js\"></script><script src=\"/static/color-thief.min.js\"></script></head><body class=\"min-h-screen bg-gradient-to-r from-neutral-800 via-neutral-900 to-neutral-800\"><main class=\"container mx-auto p-6\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>OshiStats</title><link rel=\"icon\" type=\"image/png\" href=\"/static/icon-64.png\"><link rel=\"stylesheet\" href=\"/static/tailwind.css\"><script src=\"/static/htmx.min.js\"></script><script src=\"/static/color-thief.min.js\"></script></head><body class=\"min-h-screen bg-gradient-to-r from-neutral-800 via-neutral-900 to-neutral-800\"><header class=\"bg-neutral-900 border-b border-neutral-700\"><div class=\"container mx-auto flex items-center justify-between px-6 py-4\"><div class=\"flex items-center gap-4\"><img src=\"/static/icon-240.png\" alt=\"OshiStats Icon\" class=\"w-10 h-10 rounded\"><div class=\"gap-0 select-none\"><h2 class=\"text-neutral-200 mb-0 text-sm font-semibold\">Botsu</h2><h1 class=\"text-white text-2xl font-semibold\">OshiStats</h1></div></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if model.UserProfilePictureURL != "" {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<img src=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var6 string
+			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(model.UserProfilePictureURL)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `server/components/index.templ`, Line: 59, Col: 49}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "\" alt=\"Profile\" class=\"w-10 h-10 rounded-full border border-neutral-600 shadow-sm\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</div></header><main class=\"container mx-auto p-6\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if len(model.TopVTubersAllTime) > 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<section class=\"my-8\"><div class=\"flex items-center gap-5 px-2 mb-4\"><h2 class=\"text-2xl font-bold text-white\">Top Of All Time</h2><a href=\"/timeline?type=all\" class=\"text-sm text-blue-400 hover:underline flex items-center\">Overview <span class=\"ml-1\">→</span></a></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<section class=\"my-8\"><div class=\"flex items-center gap-5 px-2 mb-4\"><h2 class=\"text-2xl font-bold text-white\">Top Of All Time</h2><a href=\"/timeline?type=all\" class=\"text-sm text-blue-400 hover:underline flex items-center\">Overview <span class=\"ml-1\">→</span></a></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -143,13 +167,13 @@ func IndexPage(model IndexPageModel) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</section>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</section>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
 		if len(model.TopVTubersWeekly) > 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<section class=\"my-8\"><div class=\"flex items-center gap-5 px-2 mb-4\"><h2 class=\"text-2xl font-bold text-white\">Top Of Last 7 Days</h2><a href=\"/timeline?type=week\" class=\"text-sm text-blue-400 hover:underline flex items-center\">Overview <span class=\"ml-1\">→</span></a></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<section class=\"my-8\"><div class=\"flex items-center gap-5 px-2 mb-4\"><h2 class=\"text-2xl font-bold text-white\">Top Of Last 7 Days</h2><a href=\"/timeline?type=week\" class=\"text-sm text-blue-400 hover:underline flex items-center\">Overview <span class=\"ml-1\">→</span></a></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -157,12 +181,12 @@ func IndexPage(model IndexPageModel) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</section>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</section>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<section class=\"px-2\"><h2 class=\"text-2xl font-bold text-white mb-4\">Watch History</h2>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<section class=\"px-2\"><h2 class=\"text-2xl font-bold text-white mb-4\">Watch History</h2>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -170,7 +194,7 @@ func IndexPage(model IndexPageModel) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</section></main></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</section></main></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
