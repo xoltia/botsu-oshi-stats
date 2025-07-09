@@ -55,9 +55,23 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /", authHandler.WrapHandlerFunc(s.getIndex))
 	mux.HandleFunc("GET /logs", authHandler.WrapHandlerFunc(s.getLogs))
+	mux.HandleFunc("GET /timeline", authHandler.WrapHandlerFunc(s.getTimeline))
 	mux.HandleFunc("GET /auth/callback", authHandler.HandleCallback)
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(static.FS)))
 	mux.ServeHTTP(w, r)
+}
+
+func (s *Server) getTimeline(w http.ResponseWriter, r *http.Request) {
+	timelineType := r.URL.Query().Get("type")
+	if timelineType != "weekly" && timelineType != "all" {
+		timelineType = "all"
+	}
+	session := auth.MustSessionFromContext(r.Context())
+	avatar := avatarURL(session)
+	components.TimelinePage(components.TimelinePageModel{
+		Type:                  timelineType,
+		UserProfilePictureURL: avatar,
+	}).Render(r.Context(), w)
 }
 
 func (s *Server) getIndex(w http.ResponseWriter, r *http.Request) {
@@ -172,10 +186,7 @@ func (s *Server) getIndex(w http.ResponseWriter, r *http.Request) {
 		TopVTubersWeekly:  topVTubersModelWeek,
 	}
 
-	if session.Avatar != "" {
-		model.UserProfilePictureURL = fmt.Sprintf("https://cdn.discordapp.com/avatars/%s/%s.webp?size=128", session.UserID, session.Avatar)
-	}
-
+	model.UserProfilePictureURL = avatarURL(session)
 	components.IndexPage(model).Render(r.Context(), w)
 }
 
@@ -238,6 +249,13 @@ func (s *Server) getLogs(w http.ResponseWriter, r *http.Request) {
 
 	continuationURL := getContinuationURL(nextKey)
 	components.WatchedVideoGridElements(videos, continuationURL).Render(r.Context(), w)
+}
+
+func avatarURL(session auth.Session) string {
+	if session.Avatar == "" {
+		return ""
+	}
+	return fmt.Sprintf("https://cdn.discordapp.com/avatars/%s/%s.webp?size=128", session.UserID, session.Avatar)
 }
 
 func getContinuationURL(key logs.PaginationKey) string {
