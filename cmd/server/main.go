@@ -20,15 +20,19 @@ import (
 
 func main() {
 	var (
-		addr        string
-		dbURL       string
-		oauthConfig server.OAuthConfig
+		addr           string
+		dbURL          string
+		oauthConfig    server.OAuthConfig
+		imgproxyConfig server.ImgproxyConfig
 	)
 	flag.StringVar(&dbURL, "db-url", "postgresql:///botsu", "url to connect to postgres db")
 	flag.StringVar(&addr, "addr", ":8080", "address to listen on")
 	flag.StringVar(&oauthConfig.ClientID, "oauth-client-id", "", "discord oauth client id")
 	flag.StringVar(&oauthConfig.ClientSecret, "oauth-client-secret", "", "discord oauth client secret")
 	flag.StringVar(&oauthConfig.RedirectURL, "oauth-redirect-url", "http://localhost:8080/auth/callback", "discord oauth redirect url")
+	flag.StringVar(&imgproxyConfig.Host, "imgproxy-host", "", "imgproxy host")
+	flag.StringVar(&imgproxyConfig.Key, "imgproxy-key", "", "imgproxy signing key")
+	flag.StringVar(&imgproxyConfig.Salt, "imgproxy-salt", "", "imgproxy signing salt")
 	flag.Parse()
 
 	if oauthConfig.ClientSecret == "" {
@@ -56,7 +60,7 @@ func main() {
 	}
 	defer ls.Close()
 
-	repo, err := index.CreateIndexedVideoRepository(ctx, db)
+	indexedVideoRepo, err := index.CreateIndexedVideoRepository(ctx, db)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -71,7 +75,14 @@ func main() {
 		log.Panicln(err)
 	}
 
-	s := server.NewServer(logRepository, repo, vtuberStore, sessionStore, oauthConfig)
+	s := server.NewServer(
+		logRepository,
+		indexedVideoRepo,
+		vtuberStore,
+		sessionStore,
+		oauthConfig,
+		imgproxyConfig,
+	)
 	err = http.ListenAndServe(addr, s)
 	if err != nil {
 		log.Fatalln(err)

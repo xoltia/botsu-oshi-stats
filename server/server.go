@@ -1,6 +1,10 @@
 package server
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"log"
 	"net/http"
@@ -21,12 +25,19 @@ type OAuthConfig struct {
 	RedirectURL  string
 }
 
+type ImgproxyConfig struct {
+	Host string
+	Salt string
+	Key  string
+}
+
 type Server struct {
-	logRepo     *logs.UserLogRepository
-	indexRepo   *index.IndexedVideoRepository
-	vtuberRepo  *vtubers.Store
-	sessions    *auth.SessionStore
-	oauthConfig OAuthConfig
+	logRepo        *logs.UserLogRepository
+	indexRepo      *index.IndexedVideoRepository
+	vtuberRepo     *vtubers.Store
+	sessions       *auth.SessionStore
+	oauthConfig    OAuthConfig
+	imgproxyConfig ImgproxyConfig
 }
 
 func NewServer(
@@ -35,13 +46,15 @@ func NewServer(
 	vtuberStore *vtubers.Store,
 	sessionStore *auth.SessionStore,
 	oauthConfig OAuthConfig,
+	imgproxyConfig ImgproxyConfig,
 ) *Server {
 	return &Server{
-		logRepo:     logRepo,
-		indexRepo:   indexedVideoRepo,
-		vtuberRepo:  vtuberStore,
-		sessions:    sessionStore,
-		oauthConfig: oauthConfig,
+		logRepo:        logRepo,
+		indexRepo:      indexedVideoRepo,
+		vtuberRepo:     vtuberStore,
+		sessions:       sessionStore,
+		oauthConfig:    oauthConfig,
+		imgproxyConfig: imgproxyConfig,
 	}
 }
 
@@ -108,7 +121,7 @@ func (s *Server) getIndex(w http.ResponseWriter, r *http.Request) {
 		video.Title = vid.Title
 		video.ChannelTitle = vid.ChannelName
 		video.PercentWatched = min(1, float64(watchTime)/float64(vid.Duration))
-		video.ThumbnailURL = vid.ThumbnailURL // TODO: validate url
+		video.ThumbnailURL = s.getImgproxyURL(vid.ThumbnailURL, "format:webp")
 		video.URL = fmt.Sprintf("https://youtu.be/%s", vid.ID)
 		video.VTubers = make([]components.WatchedVideoVTuber, len(vtubers))
 
@@ -146,7 +159,7 @@ func (s *Server) getIndex(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		topVTubersModel = append(topVTubersModel, components.TopVTuber{
-			AvatarURL:    channel.AvatarURL,
+			AvatarURL:    s.getImgproxyURL(channel.AvatarURL, "format:webp"),
 			Name:         v.EnglishName,
 			OriginalName: v.OriginalName,
 		})
@@ -173,7 +186,7 @@ func (s *Server) getIndex(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		topVTubersModelWeek = append(topVTubersModelWeek, components.TopVTuber{
-			AvatarURL:    channel.AvatarURL,
+			AvatarURL:    s.getImgproxyURL(channel.AvatarURL, "format:webp"),
 			Name:         v.EnglishName,
 			OriginalName: v.OriginalName,
 		})
@@ -233,7 +246,7 @@ func (s *Server) getLogs(w http.ResponseWriter, r *http.Request) {
 		video.Title = vid.Title
 		video.ChannelTitle = vid.ChannelName
 		video.PercentWatched = min(1, float64(watchTime)/float64(vid.Duration))
-		video.ThumbnailURL = vid.ThumbnailURL // TODO: validate url
+		video.ThumbnailURL = s.getImgproxyURL(vid.ThumbnailURL, "format:webp")
 		video.URL = fmt.Sprintf("https://youtu.be/%s", vid.ID)
 		video.VTubers = make([]components.WatchedVideoVTuber, len(vtubers))
 
@@ -267,4 +280,32 @@ func getContinuationURL(key logs.PaginationKey) string {
 	q.Set("cursor", key.EncodeBase64String())
 	u.RawQuery = q.Encode()
 	return u.String()
+}
+
+func (s *Server) getImgproxyURL(originalURL string, options string) string {
+	if s.imgproxyConfig.Host == "" {
+		return originalURL
+	}
+
+	var keyBin, saltBin []byte
+	var err error
+
+	if keyBin, err = hex.DecodeString(s.imgproxyConfig.Key); err != nil {
+		log.Printf("Invalid imgproxy key value")
+		return ""
+	}
+
+	if saltBin, err = hex.DecodeString(s.imgproxyConfig.Salt); err != nil {
+		log.Printf("Invalid imgproxy salt value")
+		return ""
+	}
+
+	path := fmt.Sprintf("/%s/plain/%s", options, originalURL)
+
+	mac := hmac.New(sha256.New, keyBin)
+	mac.Write(saltBin)
+	mac.Write([]byte(path))
+	signature := base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
+
+	return fmt.Sprintf("https://%s/%s%s", s.imgproxyConfig.Host, signature, path)
 }
