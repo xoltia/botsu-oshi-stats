@@ -80,11 +80,42 @@ func (s *Server) getTimeline(w http.ResponseWriter, r *http.Request) {
 		timelineType = "all"
 	}
 	session := auth.MustSessionFromContext(r.Context())
-	avatar := avatarURL(session)
-	components.TimelinePage(components.TimelinePageModel{
+	model := components.TimelinePageModel{
 		Type:                  timelineType,
-		UserProfilePictureURL: avatar,
-	}).Render(r.Context(), w)
+		UserProfilePictureURL: avatarURL(session),
+	}
+
+	var (
+		start time.Time
+		end   time.Time = time.Now()
+	)
+	if timelineType == "weekly" {
+		start = end.AddDate(0, 0, -7)
+	}
+
+	var (
+		history []index.WatchTime
+		err     error
+	)
+
+	// TODO: based on actual time gap
+	if timelineType == "weekly" {
+		history, err = s.indexRepo.GetDailyWatchTimeInRange(r.Context(), session.UserID, start, end)
+	} else {
+		history, err = s.indexRepo.GetDailyWatchTimeInRangeMonthly(r.Context(), session.UserID, start, end)
+	}
+	if err != nil {
+		log.Printf("Error getting watch time: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	for _, h := range history {
+		model.Timeline.Labels = append(model.Timeline.Labels, h.GroupedDate)
+		model.Timeline.Values = append(model.Timeline.Values, int(h.Duration.Minutes()))
+	}
+
+	components.TimelinePage(model).Render(r.Context(), w)
 }
 
 func (s *Server) getIndex(w http.ResponseWriter, r *http.Request) {

@@ -41,7 +41,7 @@ func TimelinePage(model TimelinePageModel) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>OshiStats</title><link rel=\"icon\" type=\"image/png\" href=\"/static/icon-64.png\"><link rel=\"stylesheet\" href=\"/static/tailwind.css\"><script src=\"/static/htmx.min.js\"></script><script src=\"https://unpkg.com/echarts@5.6.0/dist/echarts.min.js\"></script></head><body class=\"min-h-screen bg-gradient-to-br from-neutral-800 via-neutral-900 to-neutral-800\"><header class=\"bg-neutral-900 border-b border-neutral-700\"><div class=\"container mx-auto flex items-center justify-between px-6 py-4\"><a href=\"/\" class=\"flex items-center gap-4\"><img src=\"/static/icon-240.png\" alt=\"OshiStats Icon\" class=\"w-10 h-10 rounded\"><div class=\"select-none font-semibold\"><h2 class=\"text-neutral-200 mb-0 text-sm/4\">Botsu</h2><h1 class=\"text-white text-xl/6\">OshiStats</h1></div></a> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>OshiStats</title><link rel=\"icon\" type=\"image/png\" href=\"/static/icon-64.png\"><link rel=\"stylesheet\" href=\"/static/tailwind.css\"><script src=\"/static/htmx.min.js\"></script><script src=\"/static/echarts.min.js\"></script><script src=\"/static/echarts-theme.js\"></script></head><body class=\"min-h-screen bg-gradient-to-br from-neutral-800 via-neutral-900 to-neutral-800\"><header class=\"bg-neutral-900 border-b border-neutral-700\"><div class=\"container mx-auto flex items-center justify-between px-6 py-4\"><a href=\"/\" class=\"flex items-center gap-4\"><img src=\"/static/icon-240.png\" alt=\"OshiStats Icon\" class=\"w-10 h-10 rounded\"><div class=\"select-none font-semibold\"><h2 class=\"text-neutral-200 mb-0 text-sm/4\">Botsu</h2><h1 class=\"text-white text-xl/6\">OshiStats</h1></div></a> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -53,7 +53,7 @@ func TimelinePage(model TimelinePageModel) templ.Component {
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(model.UserProfilePictureURL)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `server/components/timeline.templ`, Line: 38, Col: 49}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `server/components/timeline.templ`, Line: 39, Col: 49}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -64,7 +64,7 @@ func TimelinePage(model TimelinePageModel) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></header><main class=\"container mx-auto p-6\"><section class=\"bg-white/10 border border-white/20 shadow-lg rounded-xl overflow-hidden p-4 flex flex-col items-center transition-transform\"><div id=\"timeline-chart\" class=\"w-full h-96\"></div><script type=\"text/javascript\">\n            // TODO: Make custom theme\n            const timelineChart = echarts.init(document.getElementById('timeline-chart'), 'dark');\n            window.addEventListener('resize', function() {\n              timelineChart.resize();\n            });\n            const option = {\n              backgroundColor: 'transparent',\n              title: {\n                left: 'center',\n              },\n              xAxis: {\n                data: ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></header><main class=\"container mx-auto p-6\"><section class=\"bg-white/10 border border-white/20 shadow-lg rounded-xl overflow-hidden p-4 flex flex-col items-center transition-transform\"><div id=\"timeline-chart\" class=\"w-full h-96\"></div><script type=\"text/javascript\">\n            // TODO: Make custom theme\n            const timelineChart = echarts.init(document.getElementById('timeline-chart'), 'custom');\n            window.addEventListener('resize', function() {\n              timelineChart.resize();\n            });\n            const option = {\n              title: {\n                left: 'center',\n              },\n              xAxis: {\n                data: ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

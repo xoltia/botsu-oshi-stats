@@ -125,7 +125,7 @@ func (r *IndexedVideoRepository) GetTopVTubersByAppearenceCount(
 	limit int,
 ) ([]vtubers.VTuber, error) {
 	rows, err := r.db.Unsafe().QueryxContext(ctx, `
-		SELECT vtb.*, COUNT(*) AS appearances
+		SELECT vtb.*, count(*) AS appearances
 		FROM video_history vh
 		JOIN video_vtubers vv
 		ON vh.video_id = vv.video_id AND vh.user_id = vv.user_id
@@ -145,6 +145,81 @@ func (r *IndexedVideoRepository) GetTopVTubersByAppearenceCount(
 	result := make([]vtubers.VTuber, 0)
 	for rows.Next() {
 		var row vtubers.VTuber
+		err := rows.StructScan(&row)
+		if err != nil {
+			return nil, fmt.Errorf("scan: %w", err)
+		}
+		result = append(result, row)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("next: %w", err)
+	}
+
+	return result, nil
+}
+
+type WatchTime struct {
+	GroupedDate string        `db:"grouped_date"`
+	Duration    time.Duration `db:"duration"`
+}
+
+func (r *IndexedVideoRepository) GetDailyWatchTimeInRange(
+	ctx context.Context,
+	userID string,
+	start, end time.Time,
+) ([]WatchTime, error) {
+	rows, err := r.db.QueryxContext(ctx, `
+		SELECT date(h.date_local) as grouped_date, sum(h.duration) as duration
+		FROM video_history AS h
+		WHERE user_id = ?
+			  AND date(h.date) BETWEEN date(?) AND date(?)
+		GROUP BY grouped_date
+		ORDER BY grouped_date
+	`, userID, start.UTC(), end.UTC())
+
+	if err != nil {
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	result := make([]WatchTime, 0)
+	for rows.Next() {
+		var row WatchTime
+		err := rows.StructScan(&row)
+		if err != nil {
+			return nil, fmt.Errorf("scan: %w", err)
+		}
+		result = append(result, row)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("next: %w", err)
+	}
+
+	return result, nil
+}
+
+func (r *IndexedVideoRepository) GetDailyWatchTimeInRangeMonthly(
+	ctx context.Context,
+	userID string,
+	start, end time.Time,
+) ([]WatchTime, error) {
+	rows, err := r.db.QueryxContext(ctx, `
+		SELECT substr(date(h.date_local), 0, 8) as grouped_date, sum(h.duration) as duration
+		FROM video_history AS h
+		WHERE user_id = ?
+		  AND substr(date(h.date), 0, 8) BETWEEN substr(date(?), 0, 8) AND substr(date(?), 0, 8)
+		GROUP BY grouped_date
+		ORDER BY grouped_date
+	`, userID, start.UTC(), end.UTC())
+
+	if err != nil {
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	result := make([]WatchTime, 0)
+	for rows.Next() {
+		var row WatchTime
 		err := rows.StructScan(&row)
 		if err != nil {
 			return nil, fmt.Errorf("scan: %w", err)

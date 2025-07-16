@@ -22,7 +22,8 @@ templ TimelinePage(model TimelinePageModel) {
       <link rel="icon" type="image/png" href="/static/icon-64.png">
       <link rel="stylesheet" href="/static/tailwind.css">
       <script src="/static/htmx.min.js"></script>
-      <script src="https://unpkg.com/echarts@5.6.0/dist/echarts.min.js"></script>
+      <script src="/static/echarts.min.js"></script>
+      <script src="/static/echarts-theme.js"></script>
     </head>
     <body class="min-h-screen bg-gradient-to-br from-neutral-800 via-neutral-900 to-neutral-800">
       <header class="bg-neutral-900 border-b border-neutral-700">
@@ -44,12 +45,11 @@ templ TimelinePage(model TimelinePageModel) {
           <div id="timeline-chart" class="w-full h-96"></div>
           <script type="text/javascript">
             // TODO: Make custom theme
-            const timelineChart = echarts.init(document.getElementById('timeline-chart'), 'dark');
+            const timelineChart = echarts.init(document.getElementById('timeline-chart'), 'custom');
             window.addEventListener('resize', function() {
               timelineChart.resize();
             });
             const option = {
-              backgroundColor: 'transparent',
               title: {
                 left: 'center',
               },
