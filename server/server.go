@@ -3,8 +3,10 @@ package server
 import (
 	"crypto/hmac"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/base64"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -122,8 +124,48 @@ func (s *Server) getTimeline(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, v := range topVTubers {
-		model.TopVTubers.Labels = append(model.TopVTubers.Labels, v.EnglishName)
-		model.TopVTubers.Values = append(model.TopVTubers.Values, v.Appearances)
+		avatarURL := v.PictureURL
+		channel, err := s.vtuberRepo.FindChannelByID(r.Context(), v.YouTubeID)
+		if err == nil {
+			avatarURL = channel.AvatarURL
+		} else if !errors.Is(err, sql.ErrNoRows) {
+			log.Printf("get vtuber channel: %s", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		model.TopVTubersAppearances = append(model.TopVTubersAppearances, components.TopVTuberWithAppearances{
+			TopVTuber: components.TopVTuber{
+				AvatarURL:    s.getImgproxyURL(avatarURL, "format:webp"),
+				Name:         v.EnglishName,
+				OriginalName: v.OriginalName,
+			},
+			Appearances: v.Appearances,
+		})
+	}
+	topVTubersDuration, err := s.indexRepo.GetTopVTubersByDuration(r.Context(), session.UserID, start, end, 10)
+	if err != nil {
+		log.Printf("Error getting top vtubers by duration: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	for _, v := range topVTubersDuration {
+		avatarURL := v.PictureURL
+		channel, err := s.vtuberRepo.FindChannelByID(r.Context(), v.YouTubeID)
+		if err == nil {
+			avatarURL = channel.AvatarURL
+		} else if !errors.Is(err, sql.ErrNoRows) {
+			log.Printf("get vtuber channel: %s", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		model.TopVTubersDuration = append(model.TopVTubersDuration, components.TopVTuberWithDuration{
+			TopVTuber: components.TopVTuber{
+				AvatarURL:    s.getImgproxyURL(avatarURL, "format:webp"),
+				Name:         v.EnglishName,
+				OriginalName: v.OriginalName,
+			},
+			Duration: v.Duration,
+		})
 	}
 
 	components.TimelinePage(model).Render(r.Context(), w)
@@ -194,14 +236,17 @@ func (s *Server) getIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for _, v := range topVTubers {
+		avatarURL := v.PictureURL
 		channel, err := s.vtuberRepo.FindChannelByID(r.Context(), v.YouTubeID)
-		if err != nil {
+		if err == nil {
+			avatarURL = channel.AvatarURL
+		} else if !errors.Is(err, sql.ErrNoRows) {
 			log.Printf("get vtuber channel: %s", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		topVTubersModel = append(topVTubersModel, components.TopVTuber{
-			AvatarURL:    s.getImgproxyURL(channel.AvatarURL, "format:webp"),
+			AvatarURL:    s.getImgproxyURL(avatarURL, "format:webp"),
 			Name:         v.EnglishName,
 			OriginalName: v.OriginalName,
 		})

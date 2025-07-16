@@ -123,13 +123,18 @@ type VTuberWithApperances struct {
 	Appearances int `db:"appearances"`
 }
 
+type VTuberWithDuration struct {
+	vtubers.VTuber
+	Duration time.Duration `db:"duration"`
+}
+
 func (r *IndexedVideoRepository) GetTopVTubersByAppearenceCount(
 	ctx context.Context,
 	userID string,
 	start, end time.Time,
 	limit int,
 ) ([]VTuberWithApperances, error) {
-	rows, err := r.db.Unsafe().QueryxContext(ctx, `
+	rows, err := r.db.QueryxContext(ctx, `
 		SELECT vtb.*, count(*) AS appearances
 		FROM video_history vh
 		JOIN video_vtubers vv
@@ -150,6 +155,48 @@ func (r *IndexedVideoRepository) GetTopVTubersByAppearenceCount(
 	result := make([]VTuberWithApperances, 0)
 	for rows.Next() {
 		var row VTuberWithApperances
+		err := rows.StructScan(&row)
+		if err != nil {
+			return nil, fmt.Errorf("scan: %w", err)
+		}
+		result = append(result, row)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("next: %w", err)
+	}
+
+	return result, nil
+}
+
+// TODO: count main channel content only towards channel owner
+func (r *IndexedVideoRepository) GetTopVTubersByDuration(
+	ctx context.Context,
+	userID string,
+	start, end time.Time,
+	limit int,
+) ([]VTuberWithDuration, error) {
+	rows, err := r.db.QueryxContext(ctx, `
+		SELECT vtb.*, sum(vh.duration) AS duration
+		FROM video_history vh
+		JOIN video_vtubers vv
+		ON vh.video_id = vv.video_id AND vh.user_id = vv.user_id
+		JOIN vtubers vtb
+		ON vv.vtuber_id = vtb.id
+		WHERE vh.user_id = ?
+		      AND date(vh.date) BETWEEN date(?) AND date(?)
+		GROUP BY vtb.id
+		ORDER BY duration DESC
+		LIMIT ?
+	`, userID, start.UTC(), end.UTC(), limit)
+
+	if err != nil {
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	result := make([]VTuberWithDuration, 0)
+	for rows.Next() {
+		var row VTuberWithDuration
 		err := rows.StructScan(&row)
 		if err != nil {
 			return nil, fmt.Errorf("scan: %w", err)
