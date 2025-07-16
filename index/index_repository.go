@@ -118,12 +118,17 @@ func (r *IndexedVideoRepository) InsertVideoHistory(
 	return err
 }
 
+type VTuberWithApperances struct {
+	vtubers.VTuber
+	Appearances int `db:"appearances"`
+}
+
 func (r *IndexedVideoRepository) GetTopVTubersByAppearenceCount(
 	ctx context.Context,
 	userID string,
 	start, end time.Time,
 	limit int,
-) ([]vtubers.VTuber, error) {
+) ([]VTuberWithApperances, error) {
 	rows, err := r.db.Unsafe().QueryxContext(ctx, `
 		SELECT vtb.*, count(*) AS appearances
 		FROM video_history vh
@@ -142,9 +147,9 @@ func (r *IndexedVideoRepository) GetTopVTubersByAppearenceCount(
 		return nil, fmt.Errorf("query: %w", err)
 	}
 
-	result := make([]vtubers.VTuber, 0)
+	result := make([]VTuberWithApperances, 0)
 	for rows.Next() {
-		var row vtubers.VTuber
+		var row VTuberWithApperances
 		err := rows.StructScan(&row)
 		if err != nil {
 			return nil, fmt.Errorf("scan: %w", err)

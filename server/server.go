@@ -115,6 +115,17 @@ func (s *Server) getTimeline(w http.ResponseWriter, r *http.Request) {
 		model.Timeline.Values = append(model.Timeline.Values, int(h.Duration.Minutes()))
 	}
 
+	topVTubers, err := s.indexRepo.GetTopVTubersByAppearenceCount(r.Context(), session.UserID, start, end, 10)
+	if err != nil {
+		log.Printf("Error getting top vtubers: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	for _, v := range topVTubers {
+		model.TopVTubers.Labels = append(model.TopVTubers.Labels, v.EnglishName)
+		model.TopVTubers.Values = append(model.TopVTubers.Values, v.Appearances)
+	}
+
 	components.TimelinePage(model).Render(r.Context(), w)
 }
 

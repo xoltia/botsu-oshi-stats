@@ -8,7 +8,7 @@ type ChartData struct {
 type TimelinePageModel struct {
   Type                  string    `json:"type"`
 	UserProfilePictureURL string    `json:"userProfilePictureURL"`
-	// TopVTubers            ChartData `json:"topVtubers"`
+	TopVTubers            ChartData `json:"topVtubers"`
 	Timeline              ChartData `json:"timeline"`
 }
 
@@ -23,7 +23,6 @@ templ TimelinePage(model TimelinePageModel) {
       <link rel="stylesheet" href="/static/tailwind.css">
       <script src="/static/htmx.min.js"></script>
       <script src="/static/echarts.min.js"></script>
-      <script src="/static/echarts-theme.js"></script>
     </head>
     <body class="min-h-screen bg-gradient-to-br from-neutral-800 via-neutral-900 to-neutral-800">
       <header class="bg-neutral-900 border-b border-neutral-700">
@@ -44,28 +43,60 @@ templ TimelinePage(model TimelinePageModel) {
         <section class="bg-white/10 border border-white/20 shadow-lg rounded-xl overflow-hidden p-4 flex flex-col items-center transition-transform">
           <div id="timeline-chart" class="w-full h-96"></div>
           <script type="text/javascript">
-            // TODO: Make custom theme
-            const timelineChart = echarts.init(document.getElementById('timeline-chart'), 'custom');
-            window.addEventListener('resize', function() {
-              timelineChart.resize();
-            });
-            const option = {
-              title: {
-                left: 'center',
-              },
-              xAxis: {
-                data: {{ model.Timeline.Labels }}
-              },
-              yAxis: {},
-              series: [
-                {
-                  name: 'duration',
-                  type: 'bar',
-                  data: {{ model.Timeline.Values }}
+            (function() {
+              const timelineChart = echarts.init(document.getElementById('timeline-chart'));
+              window.addEventListener('resize', function() {
+                timelineChart.resize();
+              });
+              const option = {
+                darkMode: true,
+                backgroundColor: 'transparent',
+                title: {
+                  left: 'center',
+                },
+                xAxis: {
+                  data: {{ model.Timeline.Labels }}
+                },
+                yAxis: {},
+                series: [
+                  {
+                    name: 'duration',
+                    type: 'bar',
+                    data: {{ model.Timeline.Values }}
+                  }
+                ]
+              };
+              timelineChart.setOption(option);
+            })();
+          </script>
+          <div id="vtuber-chart" class="w-full h-96"></div>
+          <script type="text/javascript">
+            (function() {
+              const timelineChart = echarts.init(document.getElementById('vtuber-chart'));
+              window.addEventListener('resize', function() {
+                timelineChart.resize();
+              });
+              const option = {
+                darkMode: true,
+                backgroundColor: 'transparent',
+                title: {
+                  left: 'center',
+                },
+                series: {
+                  type: 'pie',
+                  data: []
                 }
-              ]
-            };
-            timelineChart.setOption(option);
+              };
+              const labels = {{ model.TopVTubers.Labels }};
+              const values = {{ model.TopVTubers.Values }};
+              for (let i = 0; i < labels.length; i++) {
+                option.series.data.push({
+                  name: labels[i],
+                  value: values[i],
+                }); 
+              }
+              timelineChart.setOption(option);
+            })();
           </script>
         </section>
       </main>
