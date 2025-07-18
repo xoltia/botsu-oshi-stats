@@ -68,15 +68,15 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	})
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /", authHandler.WrapHandlerFunc(s.getIndex))
+	mux.HandleFunc("GET /{$}", authHandler.WrapHandlerFunc(s.getIndex))
 	mux.HandleFunc("GET /logs", authHandler.WrapHandlerFunc(s.getLogs))
-	mux.HandleFunc("GET /overview", authHandler.WrapHandlerFunc(s.getTimeline))
+	mux.HandleFunc("GET /overview", authHandler.WrapHandlerFunc(s.getOverview))
 	mux.HandleFunc("GET /auth/callback", authHandler.HandleCallback)
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(static.FS)))
 	mux.ServeHTTP(w, r)
 }
 
-func (s *Server) getTimeline(w http.ResponseWriter, r *http.Request) {
+func (s *Server) getOverview(w http.ResponseWriter, r *http.Request) {
 	timelineType := r.URL.Query().Get("type")
 	if timelineType != "weekly" && timelineType != "all" {
 		timelineType = "all"
