@@ -54,7 +54,7 @@ func TimelinePage(model TimelinePageModel) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>OshiStats</title><link rel=\"icon\" type=\"image/png\" href=\"/static/icon-64.png\"><link rel=\"stylesheet\" href=\"/static/tailwind.css\"><script src=\"/static/htmx.min.js\"></script><script src=\"/static/echarts.min.js\"></script></head><body class=\"min-h-screen bg-gradient-to-br from-neutral-800 via-neutral-900 to-neutral-800\"><header class=\"bg-neutral-900 border-b border-neutral-700\"><div class=\"container mx-auto flex items-center justify-between px-6 py-4\"><a href=\"/\" class=\"flex items-center gap-4\"><img src=\"/static/icon-240.png\" alt=\"OshiStats Icon\" class=\"w-10 h-10 rounded\"><div class=\"select-none font-semibold\"><h2 class=\"text-neutral-200 mb-0 text-sm/4\">Botsu</h2><h1 class=\"text-white text-xl/6\">OshiStats</h1></div></a> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>OshiStats</title><link rel=\"icon\" type=\"image/png\" href=\"/static/icon-64.png\"><link rel=\"stylesheet\" href=\"/static/tailwind.css\"><script src=\"/static/htmx.min.js\"></script><script src=\"/static/chartjs.min.js\"></script></head><body class=\"min-h-screen bg-gradient-to-br from-neutral-800 via-neutral-900 to-neutral-800\"><header class=\"bg-neutral-900 border-b border-neutral-700\"><div class=\"container mx-auto flex items-center justify-between px-6 py-4\"><a href=\"/\" class=\"flex items-center gap-4\"><img src=\"/static/icon-240.png\" alt=\"OshiStats Icon\" class=\"w-10 h-10 rounded\"><div class=\"select-none font-semibold\"><h2 class=\"text-neutral-200 mb-0 text-sm/4\">Botsu</h2><h1 class=\"text-white text-xl/6\">OshiStats</h1></div></a> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -201,31 +201,31 @@ func TimelinePage(model TimelinePageModel) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</ul></div></section><section class=\"px-2 lg:items-center flex flex-col\"><h2 class=\"text-2xl font-bold mb-0\">Total Watch Time</h2><div id=\"timeline-chart\" class=\"w-full lg:w-250 h-96\"></div><script type=\"text/javascript\">\n            (function() {\n              const chart = echarts.init(document.getElementById('timeline-chart'), 'dark');\n              chart.setOption({\n                darkMode: true,\n                backgroundColor: 'transparent',\n                xAxis: {\n                  data: ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</ul></div></section><section class=\"px-2 lg:items-center flex flex-col\"><h2 class=\"text-2xl font-bold mb-4\">Total Watch Time</h2><div class=\"w-full lg:w-300 h-96 flex flex-col items-center\"><canvas id=\"timeline-chart\"></canvas></div><script>\n            (function() {\n              const formatMinutes = (m) => m >= 60 ?\n                `${(m/60).toFixed(1)}h` :\n                `${m}m`;\n              const ctx = document.getElementById('timeline-chart');\n              new Chart(ctx, {\n                type: 'bar',\n                data: {\n                  labels: ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		templ_7745c5c3_Var11, templ_7745c5c3_Err := templruntime.ScriptContentOutsideStringLiteral(model.Timeline.Labels)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `server/components/timeline.templ`, Line: 96, Col: 48}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `server/components/timeline.templ`, Line: 100, Col: 50}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var11)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "\n                },\n                yAxis: {},\n                series: [\n                  {\n                    name: 'duration',\n                    type: 'bar',\n                    data: ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, ",\n                  datasets: [{\n                    data: ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		templ_7745c5c3_Var12, templ_7745c5c3_Err := templruntime.ScriptContentOutsideStringLiteral(model.Timeline.Values)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `server/components/timeline.templ`, Line: 103, Col: 50}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `server/components/timeline.templ`, Line: 102, Col: 50}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var12)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "\n                  }\n                ]\n              });\n              window.addEventListener('resize', function() {\n                chart.resize();\n              });\n            })();\n          </script></section></main></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, ",\n                    borderWidth: 1,\n                    backgroundColor: '#dc2626',\n                  }]\n                },\n                options: {\n                  scales: {\n                    y: {\n                      grid: {\n                        color: 'oklch(26.8% 0.007 34.298)'\n                      },\n                      ticks: {\n                        callback: function(value, index, ticks) {\n                          return formatMinutes(value);\n                        }\n                      },\n                    },\n                    x: {\n                      grid: {\n                        color: 'oklch(26.8% 0.007 34.298)'\n                      }\n                    }\n                  },\n                  plugins: {\n                    legend: {\n                      display: false\n                    },\n                    tooltip: {\n                      callbacks: {\n                        label: function(context) {\n                          return formatMinutes(context.parsed.y);\n                        }\n                      }\n                    }\n                  }\n                }\n              });\n            })();\n          </script></section></main></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

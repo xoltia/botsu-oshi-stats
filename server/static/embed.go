@@ -6,5 +6,5 @@ import "embed"
 //go:embed htmx.min.js
 //go:embed tailwind.css
 //go:embed icon-*.png
-//go:embed echarts.min.js
+//go:embed chartjs.min.js
 var FS embed.FS

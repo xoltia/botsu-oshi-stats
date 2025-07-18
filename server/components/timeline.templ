@@ -35,7 +35,7 @@ templ TimelinePage(model TimelinePageModel) {
       <link rel="icon" type="image/png" href="/static/icon-64.png">
       <link rel="stylesheet" href="/static/tailwind.css">
       <script src="/static/htmx.min.js"></script>
-      <script src="/static/echarts.min.js"></script>
+      <script src="/static/chartjs.min.js"></script>
     </head>
     <body class="min-h-screen bg-gradient-to-br from-neutral-800 via-neutral-900 to-neutral-800">
       <header class="bg-neutral-900 border-b border-neutral-700">
@@ -84,28 +84,57 @@ templ TimelinePage(model TimelinePageModel) {
           </div>
         </section>
         <section class="px-2 lg:items-center flex flex-col">
-          <h2 class="text-2xl font-bold mb-0">Total Watch Time</h2>
-          <div id="timeline-chart" class="w-full lg:w-250 h-96"></div>
-          <script type="text/javascript">
+          <h2 class="text-2xl font-bold mb-4">Total Watch Time</h2>
+          <div class="w-full lg:w-300 h-96 flex flex-col items-center">
+            <canvas id="timeline-chart"></canvas>
+          </div>
+          <script>
             (function() {
-              const chart = echarts.init(document.getElementById('timeline-chart'), 'dark');
-              chart.setOption({
-                darkMode: true,
-                backgroundColor: 'transparent',
-                xAxis: {
-                  data: {{ model.Timeline.Labels }}
+              const formatMinutes = (m) => m >= 60 ?
+                `${(m/60).toFixed(1)}h` :
+                `${m}m`;
+              const ctx = document.getElementById('timeline-chart');
+              new Chart(ctx, {
+                type: 'bar',
+                data: {
+                  labels: {{ model.Timeline.Labels }},
+                  datasets: [{
+                    data: {{ model.Timeline.Values }},
+                    borderWidth: 1,
+                    backgroundColor: '#dc2626',
+                  }]
                 },
-                yAxis: {},
-                series: [
-                  {
-                    name: 'duration',
-                    type: 'bar',
-                    data: {{ model.Timeline.Values }}
+                options: {
+                  scales: {
+                    y: {
+                      grid: {
+                        color: 'oklch(26.8% 0.007 34.298)'
+                      },
+                      ticks: {
+                        callback: function(value, index, ticks) {
+                          return formatMinutes(value);
+                        }
+                      },
+                    },
+                    x: {
+                      grid: {
+                        color: 'oklch(26.8% 0.007 34.298)'
+                      }
+                    }
+                  },
+                  plugins: {
+                    legend: {
+                      display: false
+                    },
+                    tooltip: {
+                      callbacks: {
+                        label: function(context) {
+                          return formatMinutes(context.parsed.y);
+                        }
+                      }
+                    }
                   }
-                ]
-              });
-              window.addEventListener('resize', function() {
-                chart.resize();
+                }
               });
             })();
           </script>
