@@ -70,7 +70,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /", authHandler.WrapHandlerFunc(s.getIndex))
 	mux.HandleFunc("GET /logs", authHandler.WrapHandlerFunc(s.getLogs))
-	mux.HandleFunc("GET /timeline", authHandler.WrapHandlerFunc(s.getTimeline))
+	mux.HandleFunc("GET /overview", authHandler.WrapHandlerFunc(s.getTimeline))
 	mux.HandleFunc("GET /auth/callback", authHandler.HandleCallback)
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(static.FS)))
 	mux.ServeHTTP(w, r)
