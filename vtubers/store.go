@@ -40,7 +40,7 @@ func CreateStore(ctx context.Context, db *sqlx.DB) (*Store, error) {
 			);
 
 			CREATE TABLE IF NOT EXISTS update_history (
-				timestamp TIMESTAMP NOT NULL	
+				timestamp TIMESTAMP NOT NULL
 			);
 		`)
 	if err != nil {
@@ -209,7 +209,7 @@ func (s *Store) GetAllNames(ctx context.Context) (names []Names, err error) {
 }
 
 func (s *Store) LogUpdate(ctx context.Context) error {
-	_, err := s.db.ExecContext(ctx, "INSERT INTO updates (timestamp) VALUES (CURRENT_TIMESTAMP)")
+	_, err := s.db.ExecContext(ctx, "INSERT INTO update_history (timestamp) VALUES (CURRENT_TIMESTAMP)")
 	return err
 }
 

@@ -268,14 +268,17 @@ func (s *Server) getIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for _, v := range topVTubersWeek {
+		avatarURL := v.PictureURL
 		channel, err := s.vtuberRepo.FindChannelByID(r.Context(), v.YouTubeID)
-		if err != nil {
+		if err == nil {
+			avatarURL = channel.AvatarURL
+		} else if !errors.Is(err, sql.ErrNoRows) {
 			log.Printf("get vtuber channel: %s", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		topVTubersModelWeek = append(topVTubersModelWeek, components.TopVTuber{
-			AvatarURL:    s.getImgproxyURL(channel.AvatarURL, "format:webp"),
+			AvatarURL:    s.getImgproxyURL(avatarURL, "format:webp"),
 			Name:         v.EnglishName,
 			OriginalName: v.OriginalName,
 		})
