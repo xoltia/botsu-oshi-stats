@@ -76,7 +76,7 @@ templ TimelinePage(model TimelinePageModel) {
                   <img src={v.AvatarURL} alt={v.Name} class="w-10 h-10 rounded-full ml-2 mr-4 object-cover" />
                   <div>
                     <div class="text-neutral-100">{v.Name}</div>
-                    <div class="text-neutral-300 italic text-sm">{v.Duration.Truncate(time.Minute).String()}</div>
+                    <div class="text-neutral-300 italic text-sm">{v.Duration.Truncate(time.Second).String()}</div>
                   </div>
                 </li>
               }
