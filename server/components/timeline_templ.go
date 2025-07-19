@@ -77,7 +77,7 @@ func TimelinePage(model TimelinePageModel) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></header><main class=\"container mx-auto p-1 md:p-6 text-white\"><section class=\"px-2 py-4 md:flex justify-center space-x-4\"><div class=\"my-4\"><h2 class=\"text-2xl font-bold mb-4\">Top VTubers by Appearances</h2><ul class=\"gap-4 grid grid-cols-2\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></header><main class=\"container mx-auto p-1 md:p-6 text-white\"><section class=\"px-2 py-4 md:flex justify-center space-x-4\"><div class=\"my-4\"><h2 class=\"text-2xl font-bold mb-4\">Top By Appearances</h2><ul class=\"gap-4 grid grid-cols-2\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -139,7 +139,7 @@ func TimelinePage(model TimelinePageModel) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</ul></div><div class=\"my-4\"><h2 class=\"text-2xl font-bold mb-4\">Top VTubers by Duration</h2><ul class=\"gap-4 grid grid-cols-2\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</ul></div><div class=\"my-4\"><h2 class=\"text-2xl font-bold mb-4\">Top By Duration</h2><ul class=\"gap-4 grid grid-cols-2\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
