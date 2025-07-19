@@ -251,7 +251,7 @@ func (r *IndexedVideoRepository) GetDailyWatchTimeInRange(
 	return result, nil
 }
 
-func (r *IndexedVideoRepository) GetDailyWatchTimeInRangeMonthly(
+func (r *IndexedVideoRepository) GetMonthlyWatchTimeInRange(
 	ctx context.Context,
 	userID string,
 	start, end time.Time,

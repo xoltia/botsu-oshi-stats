@@ -78,7 +78,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) getOverview(w http.ResponseWriter, r *http.Request) {
 	timelineType := r.URL.Query().Get("type")
-	if timelineType != "weekly" && timelineType != "all" {
+	if timelineType != "week" && timelineType != "all" {
 		timelineType = "all"
 	}
 	session := auth.MustSessionFromContext(r.Context())
@@ -91,8 +91,8 @@ func (s *Server) getOverview(w http.ResponseWriter, r *http.Request) {
 		start time.Time
 		end   time.Time = time.Now()
 	)
-	if timelineType == "weekly" {
-		start = end.AddDate(0, 0, -7)
+	if timelineType == "week" {
+		start = end.AddDate(0, 0, -6)
 	}
 
 	var (
@@ -101,10 +101,10 @@ func (s *Server) getOverview(w http.ResponseWriter, r *http.Request) {
 	)
 
 	// TODO: based on actual time gap
-	if timelineType == "weekly" {
+	if timelineType == "week" {
 		history, err = s.indexRepo.GetDailyWatchTimeInRange(r.Context(), session.UserID, start, end)
 	} else {
-		history, err = s.indexRepo.GetDailyWatchTimeInRangeMonthly(r.Context(), session.UserID, start, end)
+		history, err = s.indexRepo.GetMonthlyWatchTimeInRange(r.Context(), session.UserID, start, end)
 	}
 	if err != nil {
 		log.Printf("Error getting watch time: %s", err)
@@ -252,12 +252,14 @@ func (s *Server) getIndex(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
+	end := time.Now()
+	start := end.AddDate(0, 0, -6)
 	topVTubersModelWeek := make([]components.TopVTuber, 0, topVTubersNumber)
 	topVTubersWeek, err := s.indexRepo.GetTopVTubersByAppearenceCount(
 		r.Context(),
 		userID,
-		time.Now().AddDate(0, 0, -7),
-		time.Now(),
+		start,
+		end,
 		topVTubersNumber,
 	)
 	if err != nil {
