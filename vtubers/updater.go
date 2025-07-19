@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"iter"
-	"maps"
 	"slices"
 
 	"google.golang.org/api/option"
@@ -39,11 +38,8 @@ type Updater struct {
 	Scraper *HololistScraper
 }
 
-func (u *Updater) updateHololistData(ctx context.Context) (iter.Seq[string], error) {
+func (u *Updater) updateHololistData(ctx context.Context) error {
 	u.Scraper.Reset()
-
-	// Using a map because it is technically possible for multiple vtubers to share a channel.
-	seenIDs := map[string]struct{}{}
 
 	for {
 		page, err := u.Scraper.NextPosts(ctx, u.Options.ScraperBatchSize, u.Options.MaxRequestAttempts)
@@ -51,7 +47,7 @@ func (u *Updater) updateHololistData(ctx context.Context) (iter.Seq[string], err
 			if errors.Is(err, ErrExhaustedPosts) {
 				break
 			}
-			return nil, err
+			return err
 		}
 
 		for _, meta := range page {
@@ -59,46 +55,35 @@ func (u *Updater) updateHololistData(ctx context.Context) (iter.Seq[string], err
 			if err == nil && existing.Modified == meta.Modified {
 				continue
 			} else if !errors.Is(err, sql.ErrNoRows) {
-				return nil, err
+				return err
 			}
 
 			rendered, err := u.Scraper.GetRenderedPost(ctx, meta.Link, u.Options.MaxRequestAttempts)
 			if err != nil {
-				return nil, err
+				return err
 			}
 			err = u.Store.CreateOrUpdate(ctx, VTuber{rendered, meta})
 			if err != nil {
-				return nil, err
-			}
-
-			if rendered.YouTubeID != "" {
-				seenIDs[rendered.YouTubeID] = struct{}{}
+				return err
 			}
 		}
 	}
 
-	return maps.Keys(seenIDs), nil
+	return nil
 }
 
 func (u *Updater) Update(ctx context.Context) error {
 	u.Options.applyDefaults()
 
-	var (
-		youtubeIDs iter.Seq[string]
-		err        error
-	)
-
 	if !u.Options.ChannelsOnly {
-		youtubeIDs, err = u.updateHololistData(ctx)
+		err := u.updateHololistData(ctx)
 		if err != nil {
 			return fmt.Errorf("hololist update: %w", err)
 		}
-	} else {
-		ids, err := u.Store.GetAllScrapedYouTubeIDs(ctx)
-		if err != nil {
-			return fmt.Errorf("load ids: %w", err)
-		}
-		youtubeIDs = slices.Values(ids)
+	}
+	youtubeIDs, err := u.Store.GetAllScrapedYouTubeIDs(ctx)
+	if err != nil {
+		return fmt.Errorf("load ids: %w", err)
 	}
 
 	err = u.updateChannelData(ctx, youtubeIDs)
@@ -114,7 +99,7 @@ func (u *Updater) Update(ctx context.Context) error {
 	return nil
 }
 
-func (u *Updater) updateChannelData(ctx context.Context, ids iter.Seq[string]) error {
+func (u *Updater) updateChannelData(ctx context.Context, ids []string) error {
 	apiKey := u.Options.GoogleAPIKey
 	if apiKey == "" {
 		return nil
@@ -126,9 +111,7 @@ func (u *Updater) updateChannelData(ctx context.Context, ids iter.Seq[string]) e
 	}
 
 	channelsService := youtube.NewChannelsService(service)
-
-	idSlice := slices.Collect(ids)
-	batches := slices.Chunk(idSlice, 50)
+	batches := slices.Chunk(ids, 50)
 
 	for batch := range batches {
 		channels, err := channelsService.
