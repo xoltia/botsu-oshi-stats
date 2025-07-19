@@ -27,6 +27,7 @@ func main() {
 	if err != nil {
 		log.Panicln(err)
 	}
+	defer db.Close()
 
 	store, err := vtubers.CreateStore(ctx, db)
 	if err != nil {
@@ -37,6 +38,7 @@ func main() {
 	if err != nil {
 		log.Panicln(err)
 	}
+	defer pgDB.Close()
 
 	logRepository := logs.NewRepository(pgDB)
 

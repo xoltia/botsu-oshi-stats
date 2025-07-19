@@ -46,11 +46,13 @@ func main() {
 	if err != nil {
 		log.Panicln(err)
 	}
+	defer db.Close()
 
 	pgDB, err := sqlx.Open("pgx", dbURL)
 	if err != nil {
 		log.Panicln(err)
 	}
+	defer pgDB.Close()
 
 	logRepository := logs.NewRepository(pgDB)
 

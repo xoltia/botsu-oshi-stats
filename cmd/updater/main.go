@@ -32,6 +32,7 @@ func main() {
 	if err != nil {
 		log.Panicln(err)
 	}
+	defer db.Close()
 
 	client := &http.Client{}
 	limiter := rate.NewLimiter(rate.Limit(time.Second), 2)
