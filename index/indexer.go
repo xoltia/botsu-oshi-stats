@@ -43,12 +43,23 @@ func (i *Indexer) Index(ctx context.Context) error {
 			return err
 		}
 
-		vtubers, err := detector.Detect(ctx, log)
+		vs, err := detector.Detect(ctx, log)
 		if err != nil {
 			return err
 		}
 
-		for _, v := range vtubers.All {
+		// Linked channels can be deceiving as they sometimes link to genmates
+		// or otherwise related vtubers. Ignore them for primary sources.
+		var filtered []vtubers.VTuber
+		if vs.PrimaryChannel != nil {
+			filtered = make([]vtubers.VTuber, len(vs.NameText)+1)
+			filtered[0] = *vs.PrimaryChannel
+			copy(filtered[1:], vs.NameText)
+		} else {
+			filtered = vs.All
+		}
+
+		for _, v := range filtered {
 			err := i.indexRepo.InsertVideoVTuber(
 				ctx,
 				log.UserID,
