@@ -87,6 +87,7 @@ func appendUnique(slice []VTuber, element VTuber) []VTuber {
 
 func (d *Detector) Detect(ctx context.Context, log logs.Log) (DetectionResult, error) {
 	result := DetectionResult{}
+	// TODO: Fix this, vtubers can share channels
 	vtuber, err := d.store.FindByYouTubeID(ctx, log.Video.ChannelID)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return DetectionResult{}, err
