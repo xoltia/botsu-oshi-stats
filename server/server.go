@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/base64"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"log"
@@ -29,8 +28,8 @@ type OAuthConfig struct {
 
 type ImgproxyConfig struct {
 	Host string
-	Salt string
-	Key  string
+	Salt []byte
+	Key  []byte
 }
 
 type Server struct {
@@ -374,30 +373,34 @@ func getContinuationURL(key logs.PaginationKey) string {
 	return u.String()
 }
 
-func (s *Server) getImgproxyURL(originalURL string, options string) string {
+func (s *Server) getImgproxyURL(originalURL string, options ...string) string {
 	if s.imgproxyConfig.Host == "" {
 		return originalURL
 	}
 
-	var keyBin, saltBin []byte
-	var err error
-
-	if keyBin, err = hex.DecodeString(s.imgproxyConfig.Key); err != nil {
-		log.Printf("Invalid imgproxy key value")
-		return ""
+	optionsLen := 0
+	for _, o := range options {
+		optionsLen += len(o)
 	}
 
-	if saltBin, err = hex.DecodeString(s.imgproxyConfig.Salt); err != nil {
-		log.Printf("Invalid imgproxy salt value")
-		return ""
+	path := []byte{}
+	for _, o := range options {
+		path = append(path, '/')
+		path = append(path, o...)
 	}
+	path = append(path, '/')
+	path = base64.RawURLEncoding.AppendEncode(path, []byte(originalURL))
 
-	path := fmt.Sprintf("/%s/plain/%s", options, originalURL)
+	fmt.Println(string(path))
 
-	mac := hmac.New(sha256.New, keyBin)
-	mac.Write(saltBin)
-	mac.Write([]byte(path))
-	signature := base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
+	mac := hmac.New(sha256.New, s.imgproxyConfig.Key)
+	mac.Write(s.imgproxyConfig.Salt)
+	mac.Write(path)
+	signature := mac.Sum(nil)
 
-	return fmt.Sprintf("https://%s/%s%s", s.imgproxyConfig.Host, signature, path)
+	return fmt.Sprintf(
+		"https://%s/%s%s",
+		s.imgproxyConfig.Host,
+		base64.RawURLEncoding.EncodeToString(signature),
+		path)
 }

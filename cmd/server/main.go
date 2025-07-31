@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/hex"
 	"flag"
 	"log"
 	"net/http"
@@ -20,10 +21,12 @@ import (
 
 func main() {
 	var (
-		addr           string
-		dbURL          string
-		oauthConfig    server.OAuthConfig
-		imgproxyConfig server.ImgproxyConfig
+		addr                string
+		dbURL               string
+		oauthConfig         server.OAuthConfig
+		imgproxyConfig      server.ImgproxyConfig
+		imgproxySigningKey  string
+		imgproxySigningSalt string
 	)
 	flag.StringVar(&dbURL, "db-url", "postgresql:///botsu", "url to connect to postgres db")
 	flag.StringVar(&addr, "addr", ":8080", "address to listen on")
@@ -31,9 +34,20 @@ func main() {
 	flag.StringVar(&oauthConfig.ClientSecret, "oauth-client-secret", "", "discord oauth client secret")
 	flag.StringVar(&oauthConfig.RedirectURL, "oauth-redirect-url", "http://localhost:8080/auth/callback", "discord oauth redirect url")
 	flag.StringVar(&imgproxyConfig.Host, "imgproxy-host", "", "imgproxy host")
-	flag.StringVar(&imgproxyConfig.Key, "imgproxy-key", "", "imgproxy signing key")
-	flag.StringVar(&imgproxyConfig.Salt, "imgproxy-salt", "", "imgproxy signing salt")
+	flag.StringVar(&imgproxySigningKey, "imgproxy-key", "", "imgproxy signing key")
+	flag.StringVar(&imgproxySigningSalt, "imgproxy-salt", "", "imgproxy signing salt")
 	flag.Parse()
+
+	var err error
+	if imgproxyConfig.Key, err = hex.DecodeString(imgproxySigningKey); err != nil {
+		log.Printf("Invalid imgproxy key value: %s", err)
+		return
+	}
+
+	if imgproxyConfig.Salt, err = hex.DecodeString(imgproxySigningSalt); err != nil {
+		log.Printf("Invalid imgproxy salt value: %s", err)
+		return
+	}
 
 	if oauthConfig.ClientSecret == "" {
 		oauthConfig.ClientSecret = os.Getenv("BOTSU_WEB_OAUTH_CLIENT_SECRET")
