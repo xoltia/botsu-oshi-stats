@@ -391,8 +391,6 @@ func (s *Server) getImgproxyURL(originalURL string, options ...string) string {
 	path = append(path, '/')
 	path = base64.RawURLEncoding.AppendEncode(path, []byte(originalURL))
 
-	fmt.Println(string(path))
-
 	mac := hmac.New(sha256.New, s.imgproxyConfig.Key)
 	mac.Write(s.imgproxyConfig.Salt)
 	mac.Write(path)
