@@ -204,7 +204,7 @@ func (s *Server) getIndex(w http.ResponseWriter, r *http.Request) {
 		video.Title = vid.Title
 		video.ChannelTitle = vid.ChannelName
 		video.PercentWatched = min(1, float64(watchTime)/float64(vid.Duration))
-		video.ThumbnailURL = s.getImgproxyURL(vid.ThumbnailURL, "format:webp")
+		video.ThumbnailURL = s.getImgproxyURL(vid.ThumbnailURL, "format:webp", "width:500")
 		video.URL = fmt.Sprintf("https://youtu.be/%s", vid.ID)
 		video.VTubers = make([]components.WatchedVideoVTuber, len(vtubers))
 
@@ -337,7 +337,7 @@ func (s *Server) getLogs(w http.ResponseWriter, r *http.Request) {
 		video.Title = vid.Title
 		video.ChannelTitle = vid.ChannelName
 		video.PercentWatched = min(1, float64(watchTime)/float64(vid.Duration))
-		video.ThumbnailURL = s.getImgproxyURL(vid.ThumbnailURL, "format:webp")
+		video.ThumbnailURL = s.getImgproxyURL(vid.ThumbnailURL, "format:webp", "width:500")
 		video.URL = fmt.Sprintf("https://youtu.be/%s", vid.ID)
 		video.VTubers = make([]components.WatchedVideoVTuber, len(vtubers))
 
